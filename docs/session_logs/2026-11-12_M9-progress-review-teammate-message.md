@@ -45,5 +45,31 @@ None generated or modified.
 ## Decisions taken
 None.
 
+## Follow-up: D014 explained (Q&A, read-only)
+User asked for an explanation of D014 (open question #1 in
+`docs/V010_CHANGE_REPORT.md`). Read D014 in `docs/DECISIONS.md`,
+`generation/indian_population.py` (draw order), and grepped all uses of
+`risk_factors.hyperlipidemia`.
+
+Findings:
+- The flag is an independent `Bernoulli(0.812)` (INDIAB-17 marginal),
+  drawn before and separately from the lipid panel; D014 (2026-09-26,
+  human-directed) kept it deliberately unreconciled with
+  `lipid_interpretations`.
+- Only consumers: `integration/build_patient.py` (copies it into the
+  record), `integration/validate_population.py` and
+  `integration/analyze_m3_population.py` (prevalence checks). No
+  diagnosis, medication, BP or timeline logic reads it, so a reversal
+  has a small blast radius.
+- Concrete sample example: `review_samples_v010/htn_dm_untreated_PAT_000095.json`
+  has `hyperlipidemia: true` while both NCEP and LAI say dyslipidemia
+  false (panel 143.2 / 70.4 / 45.8 / 83.3). The other 4 samples agree.
+- Reversal side-effect to handle: removing the Bernoulli draw from the
+  main RNG stream would shift every later field (lipid child seeds,
+  treatment, BP, family history, onset) for the same seed, unless a
+  placeholder draw is kept.
+
+No decision taken; awaiting the user.
+
 ## Commit
-Recorded in the final reply (commit created after this file was written).
+First push: `465976d`. Follow-up recorded in the final reply.
