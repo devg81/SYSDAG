@@ -1292,6 +1292,23 @@ parameter count.
 
 # Last Updated
 
+2026-11-12 (latest, -jatin) — Schema v0.12 plus three human decisions:
+- **D024:** the LAI_2020 interpretation now carries a rule-based risk tier and
+  LDL goal, computed from modelled factors only and enforced by the validator.
+  On 5,000 seeds: low 30.8 / moderate 33.9 / high 27.1 / very high 8.2%, and 0
+  other fields changed.
+- **D025:** TG > 400 panels stay rejected.
+- **D026:** the pilot is rebuilt at v0.12 (`validation/pilot_50_records/rebuild_v012.py`
+  + `tests/test_pilot_v012.py`), and heavy work runs on AWS
+  (`docs/AWS_RUN_PLAN-jatin.md`: 1 CPU instance, ~3 h, estimated under US$5;
+  **not launched**).
+- Samples: `review_samples_v012/`, all 5 valid.
+- Tests: `tests/test_v012_lai_risk.py` 12/12 passed locally (no PTB-XL needed).
+  The rest of the suite still needs PTB-XL and has not run since D023.
+- Open: v0.10 questions 4–7 (evidence searches).
+- Next action: go-ahead to launch the AWS phase-1 instance (tests → pilot →
+  10…10K → approve 100K).
+
 2026-11-12 (latest, -jatin) — Schema v0.11 (D023, human-approved): D014 reversed.
 `risk_factors.hyperlipidemia` is now derived from the patient's own panel
 (NCEP_ATP_III dyslipidemia), with a hard validator rule. A placeholder draw

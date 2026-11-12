@@ -5,6 +5,59 @@ Newest entries at the top. Do not revisit a decision without new evidence.
 
 ---
 
+## D026 — Rebuild the 50-record pilot at v0.12; run heavy work (pilot, 100K, later ECG) on AWS (human-approved 2026-11-12) -jatin
+
+**Author:** -jatin.
+
+**Decision.** (1) The stale v0.8 pilot (`validation/pilot_50_records/`, a v0.7→v0.8 migration) is rebuilt, not retired. The same 50 IDs are regenerated fresh at the current schema by `validation/pilot_50_records/rebuild_v012.py`, gated by `tests/test_pilot_v012.py`. The v0.8 files stay as the historical artifact; their migration tests are retired once the rebuild passes. (2) Work that needs PTB-XL, pandas or the GAN checkpoints runs on AWS, per `docs/AWS_RUN_PLAN-jatin.md`: phase 1 is one CPU `c7i.2xlarge` for ~3 h, estimated under US$5; phase 2 (ECG) is estimated only after the M7 code exists.
+
+**Reason.** The local machine cannot run `build_patient()`: no PTB-XL CSVs, and Windows Application Control blocks pandas. The user chose AWS over the teammate's machine.
+
+**Alternatives considered.** Retire the pilot as historical, or delete it (not chosen). Teammate's machine (not chosen). Fix this laptop (blocked by a security policy that should not be changed).
+
+**Consequences.** Nothing has been launched yet. Launching an instance and the 100K run each still need explicit go-ahead (§15). AWS credentials stay out of the repo.
+
+---
+
+## D025 — Lipid panels with TG > 400 mg/dL stay rejected and redrawn (human-approved 2026-11-12) -jatin
+
+**Author:** -jatin.
+
+**Decision.** Keep the D022 behaviour: a panel whose TG exceeds 400 mg/dL (where Friedewald LDL is invalid) is rejected and redrawn whole. LDL is never null.
+
+**Reason.** It is the simplest option, already validated, and keeps every downstream rule (interpretations, the D023 flag, the D024 tier) free of null-LDL handling.
+
+**Alternatives considered.** Emit LDL = null with a reason, as a real lab would. That keeps the high-TG tail but needs null handling everywhere.
+
+**Consequences.** The generated TG distribution is truncated at 400 (about 0.6% of real-world panels exceed it). This is documented in provenance, and closes v0.10 open question 2.
+
+---
+
+## D024 — Rule-based LAI risk tier and LDL goal on the LAI_2020 interpretation; schema v0.11 → v0.12 (human-approved 2026-11-12) -jatin
+
+**Author:** -jatin.
+
+**Decision (user chose "simple risk rule").** The LAI_2020 lipid interpretation gains `risk_category` (low / moderate / high / very_high), `ldl_goal_mg_dl`, `ldl_above_goal`, `risk_factors_counted` and `risk_derivation`. They are computed by `derive_lai_risk()` from modelled factors only, with no RNG. Major risk factors counted: age (men ≥45, women ≥55), current smoking, hypertension, and low HDL (men <40, women <50). Rule: diabetes + ≥2 risk factors → very high (goal <50); diabetes + 0–1 → high (<70); non-diabetic ≥3 → high (<70); exactly 2 → moderate (<100); 0–1 → low (<100). The clinical validator recomputes the tier (`lai_risk_tier_consistency`) and rejects tier fields on any other definition. Config: `lipid_definitions.LAI_2020.risk_tiers`.
+
+**Evidence and confidence.**
+- Diabetes split and goals: LAI diabetic dyslipidaemia consensus (J Clin Lipidol 2022) and LAI 2023 Consensus IV.
+- Risk-factor list and the non-diabetic 0–1 / 2 / ≥3 split: LAI 2016 Part 1, as reported by secondary sources. The LAI full texts returned 402/403, so this split is verified against the NLA framework LAI adapted, not LAI's own table.
+- Confidence: moderate for the rule, **low for a patient's category.**
+
+**Not modelled (each can only under-count risk).** Established ASCVD, so "extreme" is never assigned. Premature family CAD: `family_history.cardiovascular_disease` is any-age, so it is deliberately not used. Target-organ damage, CKD, familial hypercholesterolaemia, Lp(a), and smokeless tobacco.
+
+**Alternatives considered.** Screening cutoff only (recommended, not chosen). Counting family history (rejected: wrong definition).
+
+**Consequences.**
+- On 5,000 seeds: low 30.8% / moderate 33.9% / high 27.1% / very high 8.2%. Diabetics are 67% very high and 33% high. LDL is at or above the personal goal in 70.6%. These are **generated patterns, not externally validated**.
+- 0 records differ from the v0.11 generator in any other field.
+- The LAI `dyslipidemia` screening flag (LDL ≥100) is unchanged.
+- `review_samples_v012/` re-derived, all 5 valid.
+- The frozen 100K stays v0.9.
+- Closes v0.10 open question 3.
+
+---
+
 ## D023 — Reverse D014: `risk_factors.hyperlipidemia` derived from the lipid panel (NCEP ATP III); schema v0.10 → v0.11 (human-approved 2026-11-12) -jatin
 
 **Author:** -jatin (decision taken and applied in Jatin's session, 2026-11-12).

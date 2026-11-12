@@ -139,6 +139,51 @@ and to draft a hand-off message for the teammate.
   Already-pushed commit messages were not rewritten.
 - Hand-off message drafted in chat (not committed).
 
+## Follow-up 4: open questions 2/3/9 + heavy-work location (-jatin)
+User: "now let's move ahead and do the other things". I asked 4 questions, and the user answered:
+- Q2 TG > 400: keep rejecting → **D025**.
+- Q3 LAI tiers: simple risk rule → **D024**, schema v0.12.
+- Q9 old pilot: rebuild at v0.12 → **D026**.
+- Heavy work: "we will do this on AWS" → **D026** plus an AWS plan.
+
+Evidence (web):
+- LAI diabetic dyslipidaemia consensus (ScienceDirect S1933287422003002) and
+  LAI 2023 Consensus IV (S1933287424000060), for goals and the diabetes split.
+- LAI 2016 Part 1 risk-factor list, via secondary snippets.
+- NLA framework, for the 0–1 / 2 / ≥3 split.
+- The LAI full texts were blocked (LWW 402, lipidjournal 403). Confidence is recorded in D024.
+
+Changes:
+- `configs/indian_population.yaml`: `LAI_2020.risk_tiers`.
+- `generation/indian_population.py`: `derive_lai_risk()`, attached to the
+  LAI interpretation; no RNG.
+- `schemas/patient_schema.py`: v0.12; 5 optional LipidInterpretation fields;
+  `LAI_RISK_CATEGORIES`.
+- `integration/build_patient.py`: passes the fields; provenance clause.
+- `validation/clinical_consistency.py`: `lai_risk_tier_consistency`.
+- `integration/rederive_review_samples.py`: provenance edit list; compares base
+  interpretation keys only.
+- New `tests/test_v012_lai_risk.py` (12 tests); version asserts → 0.12.
+- New `validation/pilot_50_records/rebuild_v012.py` and `tests/test_pilot_v012.py`
+  (skip until run).
+- New `docs/AWS_RUN_PLAN-jatin.md`.
+- New `review_samples_v012/`.
+- `docs/DECISIONS.md` D024–D026; `docs/V010_CHANGE_REPORT.md` Q2/3/8/9 marked;
+  PROJECT_STATE.
+
+Results:
+- `pytest tests/test_v012_lai_risk.py`: 12 passed.
+- `test_pilot_v012.py`: 3 skipped (no output yet).
+- 5 samples: all valid, 0 warnings; tiers hand-checked against the rule.
+- 5,000 seeds vs the v0.11 generator: 0 non-tier differences. Tiers: low 30.8 /
+  moderate 33.9 / high 27.1 / very high 8.2%; diabetics 67.2% very high; LDL above
+  personal goal 70.6%.
+
+Not run: the full `pytest tests` (needs PTB-XL + pandas), the pilot rebuild, any
+scaling, and AWS (plan only, awaiting go-ahead). Open: v0.10 questions 4–7.
+
+Datasets: `review_samples_v012/` (5 records, seeds 43/53/55/57/137). Nothing else generated.
+
 ## Commits (-jatin)
 `465976d` (log), `7a0121e` (log), `c01d9f1` (D023 code + tests), `6cfa039`
 (v0.11 samples), `4fd1112` (D023 docs). The tag/rename commit is recorded in

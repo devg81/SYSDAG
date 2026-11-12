@@ -172,9 +172,9 @@ Notes on the table:
 
 1. **RESOLVED 2026-11-12 → D023 (v0.11): reversed, flag derived from NCEP. -jatin** Original question: **D014 reversal:** derive `risk_factors.hyperlipidemia` from the panel (NCEP any-abnormal,
    now 80.9%, against 81.2%)? This removes the 31% disagreement. Your call.
-2. **TG > 400:** keep rejecting, or emit LDL = null with a reason? This affects about 0.6%
+2. **RESOLVED 2026-11-12 → D025: keep rejecting. -jatin** Original: **TG > 400:** keep rejecting, or emit LDL = null with a reason? This affects about 0.6%
    of real-world panels.
-3. **LAI risk tiers:** these need an ASCVD risk category. Is a simple rule acceptable
+3. **RESOLVED 2026-11-12 → D024 (v0.12): simple rule-based LAI tier added. -jatin** Original: **LAI risk tiers:** these need an ASCVD risk category. Is a simple rule acceptable
    (for example, diabetes means high risk), or should we leave the screening cutoff only?
 4. **Onset curves:** INDIAB-17 age-specific prevalence for hypertension and diabetes would
    replace the NFHS-5/LASI-derived curves and fix the early-onset skew. The full-text
@@ -184,5 +184,5 @@ Notes on the table:
    replace the calibrated values. Also: the lipid panel isn't age/sex/urban conditioned;
    INDIAB phase I shows an urban/rural gap of 13 mg/dL in TC.
 7. **HbA1c in untreated or undiagnosed diabetes:** currently borrowed from known diabetes.
-8. **Regenerate the 100K at v0.10:** about 2 hours locally. Needs your go-ahead.
-9. **Old pilot:** the v0.8 `validation/pilot_50_records` package is stale. Retire it or rebuild it?
+8. **UPDATED 2026-11-12 → D026: regenerate at v0.12 on AWS, plan in `docs/AWS_RUN_PLAN-jatin.md`, awaiting launch go-ahead. -jatin** Original: **Regenerate the 100K at v0.10:** about 2 hours locally. Needs your go-ahead.
+9. **RESOLVED 2026-11-12 → D026: rebuild at v0.12 (`validation/pilot_50_records/rebuild_v012.py`), run on AWS. -jatin** Original: **Old pilot:** the v0.8 `validation/pilot_50_records` package is stale. Retire it or rebuild it?
