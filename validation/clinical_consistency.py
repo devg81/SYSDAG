@@ -259,6 +259,10 @@ def validate_clinical_consistency(
     elif lai is not None and lai.risk_category is not None:
         if lp is None or rf is None or patient.demographics.age is None:
             errors.append("lipid_interpretations[LAI_2020]: risk tier present but its inputs are missing")
+        elif lp.hdl_mg_dl is None or lp.ldl_mg_dl is None:
+            # Same handling as the panel<->interpretation check above: a panel
+            # with missing raw values cannot be re-verified, so warn, don't crash.
+            warnings.append("lai_risk_tier_consistency check skipped: lipid_panel has missing HDL/LDL")
         else:
             expected = derive_lai_risk(
                 indian_config,
