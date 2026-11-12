@@ -184,6 +184,24 @@ scaling, and AWS (plan only, awaiting go-ahead). Open: v0.10 questions 4–7.
 
 Datasets: `review_samples_v012/` (5 records, seeds 43/53/55/57/137). Nothing else generated.
 
+## Follow-up 5: v0.10 open questions 4–7 researched (-jatin)
+User: "Do questions 4–7 first". Web research only (WebSearch/WebFetch; PMC pages
+were bot-blocked, so the Europe PMC full-text API was used).
+- Q4: INDIAB-17 age table paywalled. Found Mohanty et al. BMC Public Health
+  2022 Table 2 (LASI + NFHS-4/SAGE HTN by age × sex). The skew is model-driven
+  (P(20) ≈ 8.5%).
+- Q5: LASI India Report Table 9.1 has mean BP by age; PDF >10 MB, not fetched.
+  Fact-sheet hosts refused connections.
+- Q6: no Indian lipid correlation matrix; urban/rural gap not adopted (regional study).
+- Q7: Sekher et al. Lancet Glob Health 2025: 45.7% of diagnosed diabetics have
+  HbA1c <7% (45+, DBS). No undiagnosed distribution published.
+- Check (20,000 generated records): HTN/DM flat with age; HTN 34–37% in every band
+  vs LASI 28→60%.
+- Output: `docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`; V010 report Q4–7 annotated;
+  PROJECT_STATE. No code change; no tests needed beyond the existing suite.
+- Open decisions: (a) age × sex-condition HTN/DM (revisits D006, v0.13);
+  (b) approve downloading the LASI India Report PDF for Q5.
+
 ## Commits (-jatin)
 `465976d` (log), `7a0121e` (log), `c01d9f1` (D023 code + tests), `6cfa039`
 (v0.11 samples), `4fd1112` (D023 docs). The tag/rename commit is recorded in

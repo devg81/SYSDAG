@@ -1292,6 +1292,17 @@ parameter count.
 
 # Last Updated
 
+2026-11-12 (latest, -jatin) — v0.10 open questions 4–7 researched
+(`docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`). **No generator change.**
+- Q4: the onset skew is a model assumption, so a new source would not fix it.
+- Q5: needs the LASI India Report PDF (download not yet approved).
+- Q6: no Indian lipid correlation matrix exists.
+- Q7: no undiagnosed-HbA1c distribution; LASI 45.7% control kept as a cross-check.
+- **New key finding:** hypertension and diabetes flags are flat with age (HTN
+  ~35% at 20–34 and at 70+, vs LASI 47–60% at 70+), because of D006's
+  unconditioned marginals. Age × sex conditioning, calibrated to the INDIAB-17
+  marginals, awaits a user decision.
+
 2026-11-12 (latest, -jatin) — Schema v0.12 plus three human decisions:
 - **D024:** the LAI_2020 interpretation now carries a rule-based risk tier and
   LDL goal, computed from modelled factors only and enforced by the validator.

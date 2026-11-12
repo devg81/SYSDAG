@@ -176,13 +176,13 @@ Notes on the table:
    of real-world panels.
 3. **RESOLVED 2026-11-12 → D024 (v0.12): simple rule-based LAI tier added. -jatin** Original: **LAI risk tiers:** these need an ASCVD risk category. Is a simple rule acceptable
    (for example, diabetes means high risk), or should we leave the screening cutoff only?
-4. **Onset curves:** INDIAB-17 age-specific prevalence for hypertension and diabetes would
+4. **SEARCHED, no change:** skew is a model assumption; INDIAB-17 table paywalled. Evidence search 2026-11-12: `docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`. -jatin Original: **Onset curves:** INDIAB-17 age-specific prevalence for hypertension and diabetes would
    replace the NFHS-5/LASI-derived curves and fix the early-onset skew. The full-text
    tables weren't accessible.
-5. **BP at 55+:** LASI Wave 1 mean BP by age band would replace the extrapolation.
-6. **Lipid correlations:** any Indian cohort with a published lipid correlation matrix would
+5. **SEARCHED, no change:** LASI Table 9.1 has the means, but the report PDF needs a download. Evidence search 2026-11-12: `docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`. -jatin Original: **BP at 55+:** LASI Wave 1 mean BP by age band would replace the extrapolation.
+6. **SEARCHED, no change:** no Indian correlation matrix exists; urban/rural gap not adopted. Evidence search 2026-11-12: `docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`. -jatin Original: **Lipid correlations:** any Indian cohort with a published lipid correlation matrix would
    replace the calibrated values. Also: the lipid panel isn't age/sex/urban conditioned;
    INDIAB phase I shows an urban/rural gap of 13 mg/dL in TC.
-7. **HbA1c in untreated or undiagnosed diabetes:** currently borrowed from known diabetes.
+7. **SEARCHED, no change:** no undiagnosed HbA1c distribution published; LASI 45.7% control kept as a cross-check. Evidence search 2026-11-12: `docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`. -jatin Original: **HbA1c in untreated or undiagnosed diabetes:** currently borrowed from known diabetes.
 8. **UPDATED 2026-11-12 → D026: regenerate at v0.12 on AWS, plan in `docs/AWS_RUN_PLAN-jatin.md`, awaiting launch go-ahead. -jatin** Original: **Regenerate the 100K at v0.10:** about 2 hours locally. Needs your go-ahead.
 9. **RESOLVED 2026-11-12 → D026: rebuild at v0.12 (`validation/pilot_50_records/rebuild_v012.py`), run on AWS. -jatin** Original: **Old pilot:** the v0.8 `validation/pilot_50_records` package is stale. Retire it or rebuild it?
