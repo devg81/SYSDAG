@@ -492,7 +492,7 @@ risk_factors:
       type: bernoulli
       p: 0.812
     derivation:
-      # D023 (2026-11-12, human-approved, reverses D014): the flag is the
+      # D023 (2026-11-12, human-approved, reverses D014) -jatin: the flag is the
       # `dyslipidemia` verdict of this definition computed from the
       # patient's own lipid_panel. NCEP_ATP_III because INDIAB-17's 81.2%
       # is NCEP-based; with the D022 joint lipid model it reproduces

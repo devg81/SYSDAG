@@ -1,4 +1,8 @@
-# 2026-11-12 — M9: progress review + teammate status message reconciliation (Q&A)
+# 2026-11-12 — M9: progress review + teammate status message reconciliation (Q&A) -jatin
+
+**Session owner:** -jatin. Everything in this log (progress review, D014
+explanation, D023 reversal, `review_samples_v011/`, the `-jatin` tags) was done
+in Jatin's session.
 
 ## Request
 User asked for an overall progress check and an explanation of project
@@ -119,5 +123,23 @@ Datasets: `review_samples_v011/` (5 records, seeds 43/53/55/57/137, config
 Open: run `pytest tests` where PTB-XL exists; v0.10 open questions 2–4;
 approve the v0.11 100K regeneration; `diagnoses.hyperlipidemia` still deferred.
 
-## Commit
-First push: `465976d`; second: `7a0121e`. Third recorded in the final reply.
+## Follow-up 3: authorship tags + teammate message (-jatin)
+User asked to mark everything created or updated this session with `-jatin`
+and to draft a hand-off message for the teammate.
+- Renamed this log to `...-teammate-message-jatin.md` and tagged its heading.
+- Tagged: D023 heading + author line (`docs/DECISIONS.md`), the latest
+  `docs/PROJECT_STATE.md` "Last Updated" entry, `docs/V010_CHANGE_REPORT.md`
+  Q1, `review_samples_v011/README.md`, the D023 comments/docstrings in
+  `configs/indian_population.yaml`, `schemas/patient_schema.py`,
+  `generation/indian_population.py`, `validation/clinical_consistency.py`,
+  `tests/test_m4c_clinical_consistency.py`, and the new script's docstring.
+- NOT tagged on purpose: the 5 sample JSON records (an extra key would break
+  the schema loader/validators, and records must not carry a person's name)
+  and the provenance text that `build_patient()` writes into every record.
+  Already-pushed commit messages were not rewritten.
+- Hand-off message drafted in chat (not committed).
+
+## Commits (-jatin)
+`465976d` (log), `7a0121e` (log), `c01d9f1` (D023 code + tests), `6cfa039`
+(v0.11 samples), `4fd1112` (D023 docs). The tag/rename commit is recorded in
+the final reply.

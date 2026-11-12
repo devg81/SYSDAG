@@ -170,7 +170,7 @@ Notes on the table:
 
 ## Open questions (need evidence or your decision)
 
-1. **RESOLVED 2026-11-12 → D023 (v0.11): reversed, flag derived from NCEP.** Original question: **D014 reversal:** derive `risk_factors.hyperlipidemia` from the panel (NCEP any-abnormal,
+1. **RESOLVED 2026-11-12 → D023 (v0.11): reversed, flag derived from NCEP. -jatin** Original question: **D014 reversal:** derive `risk_factors.hyperlipidemia` from the panel (NCEP any-abnormal,
    now 80.9%, against 81.2%)? This removes the 31% disagreement. Your call.
 2. **TG > 400:** keep rejecting, or emit LDL = null with a reason? This affects about 0.6%
    of real-world panels.

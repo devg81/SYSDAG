@@ -5,7 +5,7 @@ v0.10 (D022): joint lipid model (no LDL clamp); HbA1c for every patient
 (Lab.derivation/confidence); BP confidence; modeled condition onset on
 Diagnosis (age_at_onset_years/onset_date, always tagged modeled) plus a
 condition_onset_modeled timeline event; age rounded to 2 decimals.
-v0.11 (D023, reverses D014): risk_factors.hyperlipidemia is DERIVED from
+v0.11 (D023, reverses D014; -jatin): risk_factors.hyperlipidemia is DERIVED from
 the patient's own lipid panel (NCEP_ATP_III dyslipidemia verdict), no
 longer an independent Bernoulli draw. No structural change; the version
 bump marks the changed meaning of the field.

@@ -1292,7 +1292,7 @@ parameter count.
 
 # Last Updated
 
-2026-11-12 (latest) — Schema v0.11 (D023, human-approved): D014 reversed.
+2026-11-12 (latest, -jatin) — Schema v0.11 (D023, human-approved): D014 reversed.
 `risk_factors.hyperlipidemia` is now derived from the patient's own panel
 (NCEP_ATP_III dyslipidemia), with a hard validator rule. A placeholder draw
 keeps every other field byte-identical to v0.10 (verified on 5,000 seeds:

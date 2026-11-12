@@ -200,7 +200,7 @@ def test_missingness_rules_correct_across_population():
         assert p.labs is not None and p.labs[0].analyte == "HbA1c"
 
 
-# Test 12 — D023 (v0.11, reverses D014): risk_factors.hyperlipidemia is
+# Test 12 — D023 (v0.11, reverses D014; -jatin): risk_factors.hyperlipidemia is
 # DERIVED from the NCEP_ATP_III interpretation, so the generator always
 # agrees and the validator rejects a disagreement in either direction.
 def test_generated_hyperlipidemia_equals_ncep_interpretation():

@@ -1,4 +1,6 @@
-# v0.11 sample records for validation (5)
+# v0.11 sample records for validation (5) -jatin
+
+Prepared by -jatin on 2026-11-12.
 
 The same 5 patients (same seeds) as `review_samples_v010/`, upgraded to schema
 v0.11 (D023: `risk_factors.hyperlipidemia` is now **derived** from the patient's

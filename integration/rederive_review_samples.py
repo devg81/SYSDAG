@@ -1,6 +1,8 @@
 """Re-derive review sample records under the current generator (D023, v0.11)
 WITHOUT PTB-XL or pandas.
 
+Author: -jatin (2026-11-12).
+
 Why this exists: `build_patient()` needs the PTB-XL CSVs (for ECG metadata)
 and pandas. Neither is available on every development machine. D023 only
 changes how `risk_factors.hyperlipidemia` is produced, and the D023

@@ -224,7 +224,7 @@ def validate_clinical_consistency(
             if dx.onset_date and enc_dates and dx.onset_date > max(enc_dates):
                 errors.append(f"diagnosis {dx.diagnosis_id}: onset_date {dx.onset_date} after the assessment")
 
-    # --- risk_factors.hyperlipidemia <-> lipid_interpretations (hard rule, D023) ---
+    # --- risk_factors.hyperlipidemia <-> lipid_interpretations (hard rule, D023; -jatin) ---
     # v0.11 reverses D014: the flag is DERIVED from the patient's own panel,
     # so it must equal the configured definition's dyslipidemia verdict.
     # The stored interpretation is itself checked against the raw panel

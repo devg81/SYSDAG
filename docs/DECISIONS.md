@@ -5,7 +5,9 @@ Newest entries at the top. Do not revisit a decision without new evidence.
 
 ---
 
-## D023 — Reverse D014: `risk_factors.hyperlipidemia` derived from the lipid panel (NCEP ATP III); schema v0.10 → v0.11 (human-approved 2026-11-12)
+## D023 — Reverse D014: `risk_factors.hyperlipidemia` derived from the lipid panel (NCEP ATP III); schema v0.10 → v0.11 (human-approved 2026-11-12) -jatin
+
+**Author:** -jatin (decision taken and applied in Jatin's session, 2026-11-12).
 
 **Decision (human-directed).** `risk_factors.hyperlipidemia` is no longer an independent `Bernoulli(0.812)` draw. It now equals `lipid_interpretations[NCEP_ATP_III].dyslipidemia`, computed from the patient's own panel (`generation/indian_population.py` `derive_hyperlipidemia()`, config `risk_factors.hyperlipidemia.derivation`). The old Bernoulli draw is still made once and discarded, so every later field keeps its random numbers for the same seed. `validation/clinical_consistency.py` replaces the D014 "intentionally not compared" check with a hard rule, `hyperlipidemia_derived_from_lipid_interpretations`, so the chain is now panel → interpretation → flag.
 

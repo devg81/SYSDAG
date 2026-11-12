@@ -114,7 +114,7 @@ def sample_hyperlipidemia(rng: np.random.Generator, config: dict[str, Any]) -> b
 
 
 def derive_hyperlipidemia(config: dict[str, Any], lipid_interpretations: list[dict[str, Any]]) -> bool:
-    """D023 (v0.11, reverses D014): risk_factors.hyperlipidemia is DERIVED,
+    """D023 (v0.11, reverses D014; -jatin): risk_factors.hyperlipidemia is DERIVED,
     never sampled -- it equals the `dyslipidemia` verdict of the configured
     definition (NCEP_ATP_III, the definition behind INDIAB-17's 81.2%)
     computed from this patient's own lipid panel."""
