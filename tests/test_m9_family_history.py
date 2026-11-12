@@ -14,6 +14,7 @@ if str(_REPO_ROOT) not in sys.path:
 
 from generation.indian_population import (
     _conditional_on_exposure,
+    diabetes_prevalence,
     family_history_marginals,
     load_config,
     sample_family_history,
@@ -68,7 +69,9 @@ def test_conditioning_preserves_the_marginal_and_hits_the_odds_ratio(m, p, r):
 
 def test_sampled_rates_match_marginals_and_diabetics_report_more_family_history():
     rng = np.random.default_rng(0)
-    p_dm = CONFIG["risk_factors"]["diabetes"]["distribution"]["p"]
+    # D027 (v0.13; -jatin): diabetes must be drawn at the SAME age-specific
+    # prevalence the family-history model now conditions on.
+    p_dm = diabetes_prevalence(CONFIG, 60.0)
     draws = [(d := bool(rng.random() < p_dm), sample_family_history(rng, CONFIG, 60.0, d)) for _ in range(40_000)]
     fh_dm = np.array([fh["diabetes"] for _, fh in draws])
     fh_cvd = np.array([fh["cardiovascular_disease"] for _, fh in draws])

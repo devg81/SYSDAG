@@ -98,12 +98,45 @@ def _sample_bernoulli(rng: np.random.Generator, config: dict[str, Any], key: str
     return bool(rng.random() < p)
 
 
-def sample_hypertension(rng: np.random.Generator, config: dict[str, Any]) -> bool:
-    return _sample_bernoulli(rng, config, "hypertension")
+def hypertension_prevalence(config: dict[str, Any], age: float, sex: int) -> float:
+    """D027 (v0.13; -jatin): P(hypertension | age, sex) from the config's
+    age_sex_curve (NFHS-5 <45, LASI 45+), linear between anchors, flat outside."""
+    anchors = config["risk_factors"]["hypertension"]["age_sex_curve"]["male" if sex == 0 else "female"]
+    return float(np.interp(age, [a[0] for a in anchors], [a[1] for a in anchors]))
 
 
-def sample_diabetes(rng: np.random.Generator, config: dict[str, Any]) -> bool:
-    return _sample_bernoulli(rng, config, "diabetes")
+def diabetes_prevalence(config: dict[str, Any], age: float) -> float:
+    """D027 (v0.13; -jatin): P(diabetes | age) from the config's age_curve
+    (NNMS <45, LASI 45+), linear between anchors, flat outside. Not sex-conditioned."""
+    anchors = config["risk_factors"]["diabetes"]["age_curve"]
+    return float(np.interp(age, [a[0] for a in anchors], [a[1] for a in anchors]))
+
+
+def expected_prevalence_uniform_age(config: dict[str, Any], condition: str) -> float:
+    """Expected marginal of the D027 curves under the generator's own age
+    (uniform over [low, high]) and sex distributions -- the correct target
+    for population-level validation (it is NOT INDIAB-17's national figure,
+    because India's real adult population is younger than uniform 20-89)."""
+    age_cfg = config["demographics"]["age"]["distribution"]
+    ages = np.linspace(float(age_cfg["min"]), float(age_cfg["max"]), 2001)
+    p_male = config["demographics"]["sex"]["distribution"]["categories"]["male"]
+    if condition == "hypertension":
+        m = np.mean([hypertension_prevalence(config, a, 0) for a in ages])
+        f = np.mean([hypertension_prevalence(config, a, 1) for a in ages])
+        return float(p_male * m + (1 - p_male) * f)
+    if condition == "diabetes":
+        return float(np.mean([diabetes_prevalence(config, a) for a in ages]))
+    raise KeyError(condition)
+
+
+def sample_hypertension(rng: np.random.Generator, config: dict[str, Any], age: float, sex: int) -> bool:
+    """D027: one rng.random() draw, same as the pre-v0.13 marginal draw."""
+    return bool(rng.random() < hypertension_prevalence(config, age, sex))
+
+
+def sample_diabetes(rng: np.random.Generator, config: dict[str, Any], age: float) -> bool:
+    """D027: one rng.random() draw, same as the pre-v0.13 marginal draw."""
+    return bool(rng.random() < diabetes_prevalence(config, age))
 
 
 def sample_hyperlipidemia(rng: np.random.Generator, config: dict[str, Any]) -> bool:
@@ -654,7 +687,9 @@ def sample_family_history(
     CVD family history is a marginal draw (no patient-level CVD label)."""
     marginals, derivation = family_history_marginals(config, age)
     dist = config["risk_factors"]["family_history"]["distribution"]
-    p_diabetes = config["risk_factors"]["diabetes"]["distribution"]["p"]
+    # D027: the patient's AGE-SPECIFIC diabetes prevalence, so the family-
+    # history marginal stays calibrated at every age (was the 11.4% marginal).
+    p_diabetes = diabetes_prevalence(config, age)
     p_if_diabetic, p_if_not = _conditional_on_exposure(
         marginals["diabetes"], p_diabetes, dist["diabetes_crude_odds_ratio"]
     )
@@ -669,7 +704,9 @@ _HTN_PREV_CACHE: dict[tuple[int, int], float] = {}
 
 
 def _hypertension_prevalence_at(config: dict[str, Any], whole_age: int, sex: int) -> float:
-    """P(SBP>=140 or DBP>=90) at a whole-year age, read off the SAME
+    """Since D027 no longer used at runtime: kept because it is how the <45
+    band values in risk_factors.hypertension.age_sex_curve were read off.
+    P(SBP>=140 or DBP>=90) at a whole-year age, read off the SAME
     NFHS-5 bivariate BP distribution sample_blood_pressure() uses
     (extrapolated above coverage exactly as there). Measured-BP prevalence,
     so it excludes treated-and-controlled people -- used only for the
@@ -693,13 +730,6 @@ def _hypertension_prevalence_at(config: dict[str, Any], whole_age: int, sex: int
         raised = (sbp >= lc["sbp_threshold"]) | (dbp >= lc["dbp_threshold"])
         _HTN_PREV_CACHE[key] = float(pmf[raised].sum())
     return _HTN_PREV_CACHE[key]
-
-
-def _diabetes_prevalence_at(config: dict[str, Any], age: float, sex: int) -> float:
-    anchors = config["onset_model"]["diabetes_prevalence_anchors_by_sex"]["male" if sex == 0 else "female"]
-    xs = [float(a[0]) for a in anchors]
-    ys = [float(a[1]) for a in anchors]
-    return float(np.interp(age, xs, ys))
 
 
 def _sample_onset_age(rng: np.random.Generator, age: float, prevalence, zero_age: float) -> float:
@@ -732,19 +762,20 @@ def sample_onset_ages(
     if hypertension:
         out["hypertension"] = {
             "age_at_onset_years": _sample_onset_age(
-                rng, age, lambda a: _hypertension_prevalence_at(config, int(math.floor(a)), sex),
+                rng, age, lambda a: hypertension_prevalence(config, a, sex),
                 config["onset_model"]["zero_prevalence_age"]["hypertension"],
             ),
-            "onset_derivation": "modeled_from_nfhs5_bp_age_curve",
+            # D027: same curve the flag is drawn from (one source of truth).
+            "onset_derivation": "modeled_from_age_prevalence_curve_nfhs5_lasi",
             "onset_confidence": "low",
         }
     if diabetes:
         out["diabetes"] = {
             "age_at_onset_years": _sample_onset_age(
-                rng, age, lambda a: _diabetes_prevalence_at(config, a, sex),
+                rng, age, lambda a: diabetes_prevalence(config, a),
                 config["onset_model"]["zero_prevalence_age"]["diabetes"],
             ),
-            "onset_derivation": "modeled_from_lasi_age_prevalence",
+            "onset_derivation": "modeled_from_age_prevalence_curve_nnms_lasi",
             "onset_confidence": "low",
         }
     return out
@@ -801,8 +832,10 @@ def generate_indian_attributes(rng: np.random.Generator, config: dict[str, Any])
     urban_rural = sample_urban_rural(rng, config)
     bmi = sample_bmi(rng, config, sex)
     smoking_status = sample_smoking_status(rng, config, sex)
-    hypertension = sample_hypertension(rng, config)
-    diabetes = sample_diabetes(rng, config)
+    # D027 (v0.13): age x sex-conditioned (hypertension) / age-conditioned
+    # (diabetes); still exactly one rng draw each, so the stream is unchanged.
+    hypertension = sample_hypertension(rng, config, age, sex)
+    diabetes = sample_diabetes(rng, config, age)
     # D023 (v0.11): placeholder draw, value discarded -- keeps the parent
     # stream aligned so every later field is byte-identical to v0.10 for
     # the same seed. The real flag is derived from the panel below.

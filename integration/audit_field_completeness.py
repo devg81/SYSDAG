@@ -232,7 +232,9 @@ def audit(in_dir: Path, config: dict[str, Any]) -> dict[str, Any]:
            for i, s_ in ((0, "male"), (1, "female"))},
         **{f"smoking_{s_}": compare_categorical(smoke[i], rfc["smoking_status"]["distribution"]["categories_by_sex"][s_])
            for i, s_ in ((0, "male"), (1, "female"))},
-        **{k: compare_bernoulli(rf[k], n, rfc[k]["distribution"]["p"]) for k in ("hypertension", "diabetes", "hyperlipidemia")},
+        # D027 (v0.13; -jatin): HTN/DM targets are the age-curve marginals.
+        **{k: compare_bernoulli(rf[k], n, ip.expected_prevalence_uniform_age(config, k)) for k in ("hypertension", "diabetes")},
+        "hyperlipidemia": compare_bernoulli(rf["hyperlipidemia"], n, rfc["hyperlipidemia"]["distribution"]["p"]),
     }
     urban_share_by_state = {
         st: round(c["urban"] / (c["urban"] + c["rural"]), 4) for st, c in sorted(state_urban.items())

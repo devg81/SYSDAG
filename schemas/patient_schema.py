@@ -1,4 +1,4 @@
-"""Patient record data model — Schema v0.12 (see SCHEMA_VERSION below).
+"""Patient record data model — Schema v0.13 (see SCHEMA_VERSION below).
 
 v0.9 (D020/D021): family_history populated; air_quality added.
 v0.10 (D022): joint lipid model (no LDL clamp); HbA1c for every patient
@@ -12,6 +12,9 @@ bump marks the changed meaning of the field.
 v0.12 (D024; -jatin): the LAI_2020 lipid interpretation carries a RULE-BASED
 risk_category / ldl_goal_mg_dl / ldl_above_goal / risk_factors_counted /
 risk_derivation (additive, optional; None on other definitions).
+v0.13 (D027; -jatin): risk_factors.hypertension is drawn from an age x sex
+prevalence curve and diabetes from an age curve (observed Indian surveys),
+no longer flat national marginals. No structural change.
 
 EMPTY-VALUE CONVENTION (v0.10): `None` = NOT MODELED by this generator
 (e.g. height_cm, echo, diagnosed_date, medication start_date). `[]` =
@@ -34,7 +37,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Optional
 
-SCHEMA_VERSION = "0.12"
+SCHEMA_VERSION = "0.13"
 
 SMOKING_STATUSES = {"never", "former", "current"}  # controlled vocabulary; see RiskFactors
 

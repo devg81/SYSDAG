@@ -17,7 +17,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from generation.indian_population import load_config  # noqa: E402
+from generation.indian_population import expected_prevalence_uniform_age, load_config  # noqa: E402
 from validation.statistical import (  # noqa: E402
     compare_bernoulli,
     compare_categorical,
@@ -58,12 +58,14 @@ if __name__ == "__main__":
     )
 
     htn = sum(p["risk_factors"]["hypertension"] for p in patients)
+    # D027 (v0.13; -jatin): targets are the age-curve marginals under the
+    # generator's own age/sex distribution, not INDIAB-17's national figures.
     report["hypertension"] = compare_bernoulli(
-        htn, n, config["risk_factors"]["hypertension"]["distribution"]["p"]
+        htn, n, expected_prevalence_uniform_age(config, "hypertension")
     )
     dm = sum(p["risk_factors"]["diabetes"] for p in patients)
     report["diabetes"] = compare_bernoulli(
-        dm, n, config["risk_factors"]["diabetes"]["distribution"]["p"]
+        dm, n, expected_prevalence_uniform_age(config, "diabetes")
     )
     lipid = sum(p["risk_factors"]["hyperlipidemia"] for p in patients)
     report["hyperlipidemia"] = compare_bernoulli(

@@ -20,6 +20,7 @@ if str(_REPO_ROOT) not in sys.path:
 import numpy as np
 
 from generation.indian_population import (  # noqa: E402
+    expected_prevalence_uniform_age,
     load_config,
     sample_age,
     sample_bmi,
@@ -80,9 +81,12 @@ if __name__ == "__main__":
     htn_rngs = [np.random.default_rng(400_000 + i) for i in range(N)]
     dm_rngs = [np.random.default_rng(500_000 + i) for i in range(N)]
     lipid_rngs = [np.random.default_rng(600_000 + i) for i in range(N)]
-    htn_pct = 100 * sum(sample_hypertension(r, config) for r in htn_rngs) / N
-    dm_pct = 100 * sum(sample_diabetes(r, config) for r in dm_rngs) / N
+    # D027 (v0.13): age/sex drawn first from the same per-draw rng.
+    htn_pct = 100 * sum(
+        sample_hypertension(r, config, sample_age(r, config), sample_sex(r, config)) for r in htn_rngs
+    ) / N
+    dm_pct = 100 * sum(sample_diabetes(r, config, sample_age(r, config)) for r in dm_rngs) / N
     lipid_pct = 100 * sum(sample_hyperlipidemia(r, config) for r in lipid_rngs) / N
-    print(f"hypertension: {htn_pct:.2f}% (expected 35.5)")
-    print(f"diabetes: {dm_pct:.2f}% (expected 11.4)")
+    print(f"hypertension: {htn_pct:.2f}% (expected {100*expected_prevalence_uniform_age(config, 'hypertension'):.2f})")
+    print(f"diabetes: {dm_pct:.2f}% (expected {100*expected_prevalence_uniform_age(config, 'diabetes'):.2f})")
     print(f"hyperlipidemia: {lipid_pct:.2f}% (expected 81.2)")

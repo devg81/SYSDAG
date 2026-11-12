@@ -42,7 +42,7 @@ def test_minimal_patient_still_works():
     assert patient.validation.validated, patient.validation.errors
     # Bumped 0.7 -> 0.8 by M8 (blood_pressure, encounters,
     # TimelineEvent.reference_id), 0.8 -> 0.9 by D020/D021.
-    assert patient.provenance.schema_version == SCHEMA_VERSION == "0.12"
+    assert patient.provenance.schema_version == SCHEMA_VERSION == "0.13"
 
 
 # Test 2 — patient with LipidPanel works

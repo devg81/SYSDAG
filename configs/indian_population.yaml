@@ -403,6 +403,8 @@ risk_factors:
     marginal_or_conditional: "marginal only"
     transformation: "None -- reported directly"
     limitations: >-
+      SUPERSEDED BY D027 (v0.13, -jatin): now age x sex-conditioned via
+      age_sex_curve below; the text that follows is the pre-v0.13 record.
       Not age- or sex-conditioned -- that data likely exists inside the
       paywalled primary paper but could not be verified accessible in this
       research pass. Generated as an unconditioned Bernoulli draw at the
@@ -414,8 +416,25 @@ risk_factors:
       become accessible, not something to approximate now.
     evidence_tier: "A (observed) for the marginal prevalence; no tier-A conditional evidence exists"
     distribution:
+      # Since D027 (v0.13) this INDIAB-17 national figure is a REFERENCE only:
+      # the generator draws from age_sex_curve below (still one rng.random()).
       type: bernoulli
       p: 0.355
+    # D027 (2026-11-12, human-approved after research) -jatin: P(hypertension
+    # | age, sex), piecewise-linear between band midpoints, flat outside.
+    # Ages <45: NFHS-5 2019-21 measured BP >=140/90 (the same bivariate BP
+    # model as risk_factors.blood_pressure, PLOS ONE 2025 e0332226; band
+    # values read off it). Ages 45+: LASI Wave 1 2017-18 (>=140/90 or on
+    # treatment), Mohanty et al. BMC Public Health 2022;22:1524 Table 2;
+    # LASI's 70+ band placed at 75 (engineering placement), flat after.
+    # Limitations: <45 excludes treated-and-controlled people (treatment is
+    # rare at those ages); the two sources join at 42/47 (definitions differ
+    # slightly). Every national source shows prevalence rising with age.
+    age_sex_curve:
+      male: [[22, 0.0849], [27, 0.1251], [32, 0.1957], [37, 0.2538], [42, 0.3224],
+             [47, 0.3212], [52, 0.3687], [57, 0.3844], [62, 0.4440], [67, 0.4836], [75, 0.4696]]
+      female: [[22, 0.0346], [27, 0.0559], [32, 0.0973], [37, 0.1792], [42, 0.2373],
+               [47, 0.2821], [52, 0.3865], [57, 0.4188], [62, 0.4806], [67, 0.5388], [75, 0.6014]]
 
   diabetes:
     source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023)"
@@ -436,6 +455,8 @@ risk_factors:
     marginal_or_conditional: "marginal only"
     transformation: "None -- reported directly"
     limitations: >-
+      SUPERSEDED BY D027 (v0.13, -jatin): now age-conditioned via age_curve
+      below; the text that follows is the pre-v0.13 record.
       Not age- or sex-conditioned, same reason as hypertension above.
       Generated as an unconditioned Bernoulli draw at the national rate.
       M2D-4 audit conclusion: same as hypertension -- unconditioned
@@ -443,8 +464,24 @@ risk_factors:
       changed.
     evidence_tier: "A (observed) for the marginal prevalence; no tier-A conditional evidence exists"
     distribution:
+      # Since D027 (v0.13) this INDIAB-17 national figure is a REFERENCE only:
+      # the generator draws from age_curve below (still one rng.random()).
       type: bernoulli
       p: 0.114
+    # D027 (2026-11-12, human-approved after research) -jatin: P(diabetes |
+    # age), piecewise-linear between band midpoints, flat outside. NOT
+    # sex-conditioned: no consistent sex difference (NNMS women 10.2 vs men
+    # 8.5%, adjusted OR 1.14, p=0.146; LASI 20.1 vs 19.6%).
+    # Ages <45: ICMR-NNMS 2017-18 (FBG >=126 or self-report; Mathur et al.,
+    # Front Public Health 2022;10:748157 Table 2): 18-29 2.2%, 30-49 7.8%
+    # (50-69 21.8%, consistent with LASI). Ages 45+: LASI Wave 1 (self-report
+    # or HbA1c >=6.5%, DBS; Sekher et al., Lancet Glob Health 2025 Table 1);
+    # LASI's 75+ band placed at 80 (engineering placement).
+    # Definitions differ by source (FBG vs HbA1c vs INDIAB-17 OGTT), and the
+    # sources join at 40/47. Every national source shows prevalence rising
+    # with age (NNMS adjusted OR 2.77 for 30-49, 8.89 for 50-69 vs 18-29).
+    age_curve: [[24, 0.022], [40, 0.078], [47, 0.147], [52, 0.188], [57, 0.205],
+                [62, 0.224], [67, 0.227], [72, 0.234], [80, 0.212]]
 
   hyperlipidemia:
     source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023) -- headline dyslipidaemia figure, as cited in docs/INDIAN_DATA_SOURCES.md M2A"
@@ -1247,15 +1284,13 @@ onset_model:
     first present, NOT diagnosis -- diagnosed_date stays null (about half of
     Indian diabetes and most hypertension is undiagnosed).
   zero_prevalence_age: {hypertension: 20, diabetes: 20}  # adults-only cohort; onset before 20 not modeled
-  hypertension_curve: >-
-    P(SBP>=140 or DBP>=90 | age, sex) read off the NFHS-5 BP model in
-    risk_factors.blood_pressure (incl. its extrapolation above coverage).
-  diabetes_prevalence_anchors_by_sex:
-    # [age, prevalence]; LASI Wave 1 self-reported diabetes (the same
-    # parent_rates family_history uses): 45-59 placed at 52, 60+ at 68
-    # (engineering placement); 0 at 20 assumed; linear between, flat after.
-    male: [[20, 0.0], [52, 0.102], [68, 0.145]]
-    female: [[20, 0.0], [52, 0.087], [68, 0.139]]
+  # D027 (v0.13) -jatin: onset now reads the SAME curves the flags are drawn
+  # from: risk_factors.hypertension.age_sex_curve and
+  # risk_factors.diabetes.age_curve. (Previously: the NFHS-5 BP model with
+  # its extrapolation, and LASI self-report anchors [[20,0],[52,.102],[68,.145]]
+  # (M) / [[20,0],[52,.087],[68,.139]] (F).)
+  hypertension_curve: "risk_factors.hypertension.age_sex_curve (D027)"
+  diabetes_curve: "risk_factors.diabetes.age_curve (D027)"
   evidence_tier: "C (model-derived from tier-A curves)"
 
 medications:
