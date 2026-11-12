@@ -1292,6 +1292,21 @@ parameter count.
 
 # Last Updated
 
+2026-11-12 (latest) — Schema v0.11 (D023, human-approved): D014 reversed.
+`risk_factors.hyperlipidemia` is now derived from the patient's own panel
+(NCEP_ATP_III dyslipidemia), with a hard validator rule. A placeholder draw
+keeps every other field byte-identical to v0.10 (verified on 5,000 seeds:
+0 non-flag differences, flag == NCEP 5,000/5,000, prevalence 80.86%, 30.96% of
+flags changed). The 5 review samples were re-derived into `review_samples_v011/`
+(only PAT_000095 changed, true → false; all 5 valid, 0 warnings).
+**Unverified:** the pytest suite was NOT run. This machine lacks the PTB-XL
+CSVs (gitignored) and Windows Application Control blocks a pandas DLL, so
+`build_patient()` cannot run here. Tests changed: 3 schema-version asserts,
+the 4 D014 tests in `test_m4c_clinical_consistency.py` were replaced with 4
+D023 tests, and 2 related tests (m4d/m4e) were renamed. Next action: run
+`pytest tests` on a machine with PTB-XL; open v0.10 questions 2–4 remain; then
+approve a v0.11 100K regeneration (~2 h). Frozen dataset still v0.9.
+
 2026-11-12 (later) — Schema v0.10 (D022) implemented from the external
 review: joint lipid model with no LDL clamp, HbA1c for diabetics, BP
 SBP-trend extrapolation with confidence flag, modeled onset ages. 187/187

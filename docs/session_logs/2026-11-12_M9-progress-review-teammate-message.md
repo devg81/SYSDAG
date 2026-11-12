@@ -71,5 +71,53 @@ Findings:
 
 No decision taken; awaiting the user.
 
+## Follow-up 2: D014 reversed → D023, applied to the 5 review samples
+User: "Yes, reverse D014 on 5 datasets provided" (the 5 v0.10 review samples).
+
+Changes:
+- `generation/indian_population.py`: new `derive_hyperlipidemia()`; the
+  Bernoulli draw is kept as a discarded placeholder (RNG alignment); the flag
+  is derived after `derive_lipid_interpretations()`; docstrings updated.
+- `configs/indian_population.yaml`: `risk_factors.hyperlipidemia.derivation`
+  (method `derived_from_lipid_interpretations`, definition `NCEP_ATP_III`);
+  `p: 0.812` kept as the statistical target.
+- `schemas/patient_schema.py`: SCHEMA_VERSION 0.10 → 0.11, docstring.
+- `integration/build_patient.py`: provenance text states the flag is derived.
+- `validation/clinical_consistency.py`: hard check
+  `hyperlipidemia_derived_from_lipid_interpretations` replaces
+  `..._intentionally_not_compared`.
+- Tests: version asserts → 0.11 (m4a, m8, v010); 4 D014 tests in
+  `test_m4c_clinical_consistency.py` replaced with 4 D023 tests (agreement,
+  both mismatch directions rejected, NCEP-not-LAI); m4d/m4e tests renamed to
+  the new check; m4b comment.
+- New `integration/rederive_review_samples.py`: upgrades stored records
+  without PTB-XL/pandas, asserting RNG alignment field by field first.
+- New `review_samples_v011/` (5 JSON + README); `docs/DECISIONS.md` D023;
+  `docs/V010_CHANGE_REPORT.md` Q1 marked resolved; `docs/PROJECT_STATE.md`.
+
+Environment: this machine's Python 3.14 had no pandas/scipy/wfdb/pytest.
+Installed pandas 3.1.1, scipy, wfdb and pytest via pip (torch not installed).
+pandas then failed to import ("An Application Control policy has blocked this
+file", a Windows security policy, deliberately not changed). The PTB-XL CSVs
+(`syngen/SynGen/SynGen/dataset/`) are also absent here (gitignored). So
+`build_patient()` and **pytest could not run**. Only `py_compile` on the changed
+modules and tests passed.
+
+Checks run (`python integration/rederive_review_samples.py review_samples_v010
+review_samples_v011` + a scratchpad comparison script):
+- 5/5 samples structurally valid, clinically consistent, 0 warnings, D023
+  check performed. Leaf diff vs v0.10: only provenance (3 fields) and, for
+  PAT_000095 only, `risk_factors.hyperlipidemia` true → false.
+- The old v0.10 PAT_000095 now FAILS the new validator (expected).
+- 5,000 seeds, new generator vs HEAD generator: 0 records with any non-flag
+  difference; flag == NCEP 5,000/5,000; prevalence 80.86%; 30.96% of flags
+  changed.
+
+Datasets: `review_samples_v011/` (5 records, seeds 43/53/55/57/137, config
+`configs/indian_population.yaml` at this commit). The frozen 100K is untouched (v0.9).
+
+Open: run `pytest tests` where PTB-XL exists; v0.10 open questions 2–4;
+approve the v0.11 100K regeneration; `diagnoses.hyperlipidemia` still deferred.
+
 ## Commit
-First push: `465976d`. Follow-up recorded in the final reply.
+First push: `465976d`; second: `7a0121e`. Third recorded in the final reply.

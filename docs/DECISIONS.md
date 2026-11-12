@@ -5,6 +5,27 @@ Newest entries at the top. Do not revisit a decision without new evidence.
 
 ---
 
+## D023 — Reverse D014: `risk_factors.hyperlipidemia` derived from the lipid panel (NCEP ATP III); schema v0.10 → v0.11 (human-approved 2026-11-12)
+
+**Decision (human-directed).** `risk_factors.hyperlipidemia` is no longer an independent `Bernoulli(0.812)` draw. It now equals `lipid_interpretations[NCEP_ATP_III].dyslipidemia`, computed from the patient's own panel (`generation/indian_population.py` `derive_hyperlipidemia()`, config `risk_factors.hyperlipidemia.derivation`). The old Bernoulli draw is still made once and discarded, so every later field keeps its random numbers for the same seed. `validation/clinical_consistency.py` replaces the D014 "intentionally not compared" check with a hard rule, `hyperlipidemia_derived_from_lipid_interpretations`, so the chain is now panel → interpretation → flag.
+
+**Reason.** D014 kept the two fields apart because the flag predated the panel and the old independent-marginal lipid sampler could not produce the 81.2% target from the numbers. The D022 joint lipid model now gives NCEP dyslipidaemia of 80.9% (5,000 records), so deriving the flag keeps the prevalence and removes a ~31% contradiction rate (for example, v0.10 PAT_000095 had flag true with a fully normal panel). An external reviewer flagged the contradiction.
+
+**Why NCEP, not LAI.** INDIAB-17's 81.2% is NCEP-based, so NCEP reproduces it. LAI_2020's lower LDL cutoff would give about 90%.
+
+**Alternatives considered.** Keep D014 (documented disagreement, rejected by the user). Derive from LAI_2020 (overshoots the source prevalence). Drop the placeholder draw (shifts treatment, BP, family history and onset for every seed, for no benefit).
+
+**Consequences.**
+- Schema v0.11: no structural change, but the bump marks the field's changed meaning. v0.10 records fail the new hard rule wherever they disagree, which is intended.
+- Verified on 5,000 seeds against the v0.10 generator (HEAD `7a0121e`): 0 records differ in any field except the flag; flag == NCEP 5,000/5,000; prevalence 80.86%; 30.96% of flags changed value.
+- The five review samples were re-derived into `review_samples_v011/` (only PAT_000095 changed: true → false).
+- `configs/indian_population.yaml`'s `distribution.p: 0.812` stays as the statistical validator's target. At 100K scale, 80.9% vs 81.2% may fail an exact binomial test (z ≈ 2.4). That is a calibration note to record when v0.11 is generated at scale, not a structural defect.
+- Does **not** add a `diagnoses.hyperlipidemia` entry or statins. That M4D/D015/D016 question stays open, although NCEP is now the natural candidate definition.
+- Frozen 100K stays v0.9. A v0.11 regeneration (~2 h) needs approval.
+- D014 is superseded, not edited (append-only log).
+
+---
+
 ## D022 — Review fixes: joint lipid model (no LDL clamp), HbA1c for diabetics, BP SBP-trend extrapolation, modeled onset; schema v0.9 → v0.10 (requested by human review 2026-11-12)
 
 **Decision.** (1) TC/ln(TG)/HDL drawn jointly from a trivariate normal: means solved from the INDIAB-17 category rates, SDs from ICMR-INDIAB phase I (PMC4016101), latent correlations (0.45, -0.40, 0.40) calibrated to INDIAB-17 dyslipidaemia 81.2% / LDL>=130 20.9% and the phase-I LDL SD. LDL stays Friedewald with **no clamp**: panels with LDL<30, TG>400 or out-of-range TC/HDL are rejected whole. (2) Diabetic HbA1c: log-normal with P(<7%)=36.3% (INDIAB-13) and SD 2.2; observed for treated, borrowed (confidence low) for untreated. (3) BP above NFHS-5 coverage: mean SBP on NFHS-5's own linear trend, DBP/SDs held; `confidence` field. (4) Modeled onset age/date per diagnosis from prevalence-by-age curves (NFHS-5 BP model; LASI diabetes), tagged modeled; diagnosed_date stays null. (5) Age rounded to 2 dp; empty-value convention documented (None = not modeled, [] = none).
