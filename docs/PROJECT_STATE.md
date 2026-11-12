@@ -1292,6 +1292,23 @@ parameter count.
 
 # Last Updated
 
+2026-11-12 (latest, -jatin) — Schema v0.13 (**D027**): hypertension now drawn
+by age × sex and diabetes by age, from observed Indian surveys (NFHS-5/NNMS <45,
+LASI 45+). This was approved by the user on condition that research found a
+positive age correlation; every national source shows one.
+- 20,000-seed check: every age band within ~2 points of its source.
+- Overall HTN 35.0% / DM 15.5% (uniform-age expectation 35.6 / 15.3; INDIAB-17's
+  35.5 / 11.4 describe India's younger real age mix).
+- Family history and treatment rates stay calibrated.
+- Validators now target the age-curve marginals.
+- Samples regenerated with the real `build_patient()` into `review_samples_v013/`
+  (ECG reused by seed); all 5 valid.
+- Full suite run locally with a scratch PTB-XL stub: 197 passed. The 1 failure is
+  the stub's fake ECG id. This run also caught and fixed a D024 validator crash on
+  panels with missing HDL/LDL.
+- Next: launch the AWS phase-1 run (real-PTB-XL tests → pilot → 10…10K → 100K
+  approval). Open: LASI report download for Q5.
+
 2026-11-12 (latest, -jatin) — v0.10 open questions 4–7 researched
 (`docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`). **No generator change.**
 - Q4: the onset skew is a model assumption, so a new source would not fix it.

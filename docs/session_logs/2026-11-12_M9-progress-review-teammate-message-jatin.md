@@ -202,6 +202,55 @@ were bot-blocked, so the Europe PMC full-text API was used).
 - Open decisions: (a) age × sex-condition HTN/DM (revisits D006, v0.13);
   (b) approve downloading the LASI India Report PDF for Q5.
 
+## Follow-up 6: age gradient research → D027, schema v0.13 (-jatin)
+User: "before applying anything do a thorough research and if found a positive
+correlation you've a green light ... to add an age gradient".
+
+Research (Europe PMC full text where PMC was bot-blocked):
+- NNMS (Mathur 2022, Table 2): DM 2.2 / 7.8 / 21.8% at 18–29 / 30–49 / 50–69;
+  adjusted OR 2.77 and 8.89.
+- LASI (Sekher 2025, Table 1): DM 14.7 → 23.4% from 45–49 to 70–74, 21.2% at 75+.
+- NFHS-4/5 (Rana 2024, Tables 1–2): DM and HTN rise in every 5-year band.
+- LASI and NFHS-4/SAGE HTN by age × sex (Mohanty 2022, Table 2).
+- NFHS-5 mean BP by age (PLOS ONE 2025).
+- Conclusion: a positive correlation for both conditions in all sources → green
+  light applied.
+
+Changes:
+- config: `hypertension.age_sex_curve`, `diabetes.age_curve` (sources inline);
+  onset_model repointed; old limitations marked superseded.
+- generation: `hypertension_prevalence()`, `diabetes_prevalence()`,
+  `expected_prevalence_uniform_age()`; samplers take age (and sex); family
+  history uses the age-specific DM prevalence; onset uses the same curves;
+  dead `_diabetes_prevalence_at` removed.
+- validators: `integration/validate_population.py` and
+  `integration/audit_field_completeness.py` target the expected marginals;
+  `integration/sampler_check.py` updated.
+- schema v0.13; build_patient provenance.
+- `validation/clinical_consistency.py`: D024 LAI check now warns (not crashes)
+  on a panel with missing HDL/LDL (bug found by the stubbed full-suite run).
+- tests: new `tests/test_v013_age_gradient.py` (8); `test_m9_family_history`
+  draws DM at the age-specific rate; version asserts → 0.13.
+- new `integration/regenerate_review_samples.py` (real `build_patient`, optional
+  ECG reuse by seed); `review_samples_v013/`; DECISIONS D027; AWS plan → v0.13.
+
+Results:
+- `pytest tests/test_v013_age_gradient.py tests/test_v012_lai_risk.py`: 20 passed.
+- Full suite with a scratch stub for `ingestion.ptbxl_source` (pytest plugin
+  in the scratchpad, not committed), ignoring `test_ingestion_caching.py`:
+  197 passed, 5 skipped, 1 failed (`test_existing_fields_unchanged_for_reference_patient`:
+  ECG id 11035 vs 11314, caused by the stub's fake ECG; all demographic
+  assertions in it passed).
+- `integration/sampler_check.py`: HTN 35.92% (expected 35.64), DM 14.94% (15.27).
+- 20,000 seeds: bands within ~2 points of sources; FH DM 45+ 13.95% (14.33),
+  CVD 45+ 11.90% (11.61); treated HTN 14.2% (14.5), DM 36.1% (36.1); median
+  onset (now 60–69) HTN 39.2, DM 42.9; LAI tiers low 34.0 / mod 27.3 / high
+  27.0 / very high 11.8%.
+- Samples: all 5 valid, 0 warnings; flags unchanged; only onset changed.
+
+Datasets: `review_samples_v013/` (5 records). Nothing else generated; the frozen
+100K is still v0.9.
+
 ## Commits (-jatin)
 `465976d` (log), `7a0121e` (log), `c01d9f1` (D023 code + tests), `6cfa039`
 (v0.11 samples), `4fd1112` (D023 docs). The tag/rename commit is recorded in

@@ -5,6 +5,39 @@ Newest entries at the top. Do not revisit a decision without new evidence.
 
 ---
 
+## D027 — Hypertension by age × sex and diabetes by age, from observed Indian surveys; supersedes D006's flat marginals for these two; schema v0.12 → v0.13 (human-approved 2026-11-12, conditional on research) -jatin
+
+**Author:** -jatin.
+
+**Approval.** The user asked for thorough research first, giving a green light only if a positive age correlation was found. It was found in every national source:
+- **Diabetes:** ICMR-NNMS 2.2% / 7.8% / 21.8% at 18–29 / 30–49 / 50–69, adjusted OR 2.77 and 8.89 (Mathur et al., Front Public Health 2022). NFHS-5 rises monotonically in 5-year bands. LASI rises from 14.7% at 45–49 to 23.4% at 70–74 (Sekher et al., Lancet Glob Health 2025). ICMR-INDIAB reports an increasing trend with age.
+- **Hypertension:** NFHS-5 rises from ~4–5% at 15–19 to 31–41% at 45–54 (Rana et al., PLOS ONE 2024). LASI rises from 28–32% at 45–49 to 47–60% at 70+ (Mohanty et al., BMC Public Health 2022).
+
+**Decision.**
+- `risk_factors.hypertension` is drawn from `P(HTN | age, sex)`: NFHS-5 measured BP for ages <45 (band values read off the project's existing NFHS-5 BP model), LASI W1 for 45+.
+- `risk_factors.diabetes` is drawn from `P(DM | age)`: NNMS for <45, LASI for 45+. It is not sex-conditioned, because sources show no consistent sex difference.
+- Both curves are piecewise-linear between band midpoints and flat outside. Each still uses exactly one `rng.random()`.
+- The onset model now uses the same curves.
+- Family history (D020) conditions on the age-specific diabetes prevalence, so its marginal stays calibrated at every age.
+- Population validators now target the curves' expected marginal under the generator's uniform(20,89) age and sex mix (`expected_prevalence_uniform_age`): HTN 35.6%, DM 15.3%. They no longer target INDIAB-17's 35.5% / 11.4%, which describe India's younger real age structure. INDIAB-17 stays in config as a reference.
+
+**Why not keep INDIAB-17's marginals by rescaling the curves?** The generator's ages are uniform 20–89 (D007), much older than India's real adult population. Rescaling would make every age-specific rate wrong to force a national number that belongs to a different age structure. A census-weighted calibration is impossible because no usable Indian age structure is available (D007).
+
+**Validation (20,000 seeds).** Overall HTN 35.0% (expected 35.6%), DM 15.5% (expected 15.3%). Every age band matches its source within ~2 points (for example HTN women 65–69: 53.7% vs LASI 53.9%; DM 75+: 21.2% vs LASI 21.2%). Family history: diabetes 45+ 13.95% (LASI 14.33%), CVD 45+ 11.90% (11.61%). Treatment: HTN 14.2% (14.5%), DM 36.1% (36.1%). LAI tiers: low 34.0 / moderate 27.3 / high 27.0 / very high 11.8%.
+
+**Limitations.**
+- Source definitions differ (measured BP vs BP-or-treatment; FBG vs HbA1c vs INDIAB-17's OGTT), and the sources join at ~42–47.
+- Band-midpoint and open-band placements (LASI 70+ at 75, 75+ at 80) are engineering choices.
+- The onset early-skew remains (median HTN onset for people now 60–69 is 39). That is a model assumption, documented in `docs/OPEN_QUESTIONS_4-7_EVIDENCE-jatin.md`.
+
+**Consequences.**
+- Records change for patients whose draw crosses the new threshold, and BP, medications, HbA1c, family history, onset and LAI tier follow.
+- The 5 review samples were regenerated with the real `build_patient()` (`integration/regenerate_review_samples.py`, ECG metadata reused by seed). All 5 keep their flags; only onset ages and tags changed.
+- Full test suite run locally with a scratch PTB-XL stub: 197 passed. The only failure is the stub's fake ECG id. `test_ingestion_caching.py` was not run (it needs real PTB-XL).
+- Frozen 100K stays v0.9. The v0.13 regeneration is part of the AWS plan (D026).
+
+---
+
 ## D026 — Rebuild the 50-record pilot at v0.12; run heavy work (pilot, 100K, later ECG) on AWS (human-approved 2026-11-12) -jatin
 
 **Author:** -jatin.

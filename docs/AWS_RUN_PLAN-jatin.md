@@ -1,4 +1,4 @@
-# AWS run plan: v0.12 pilot rebuild, 100K regeneration, later ECG -jatin
+# AWS run plan: pilot rebuild, 100K regeneration (current schema, v0.13), later ECG -jatin
 
 **Author:** -jatin, 2026-11-12. **Status:** plan only. Nothing has been
 launched, and nothing below runs without the team's go-ahead (Claude.md §14/§15).
@@ -37,7 +37,7 @@ integration code exists.
    wget -P syngen/SynGen/SynGen/dataset https://physionet.org/files/ptb-xl/1.0.1/ptbxl_database.csv https://physionet.org/files/ptb-xl/1.0.1/scp_statements.csv
    ```
    Or copy them from the teammate's SynGen archive.
-4. Full test suite. **This verifies D023 and D024, whose `build_patient` tests have not run yet.**
+4. Full test suite. **This verifies D023, D024 and D027 against real PTB-XL (locally they ran only with a stubbed ECG source).**
    ```bash
    python -m pytest tests -q
    ```
@@ -49,15 +49,15 @@ integration code exists.
 6. Progressive scaling (Claude.md §27), validating each level before the next:
    ```bash
    for n in 10 100 1000 10000; do
-     python integration/generate_population.py $n --out-dir outputs/v012/${n}_patients
-     python integration/validate_clinical_population.py outputs/v012/${n}_patients --stats --json-out outputs/v012/validation_${n}.json
+     python integration/generate_population.py $n --out-dir outputs/v013/${n}_patients
+     python integration/validate_clinical_population.py outputs/v013/${n}_patients --stats --json-out outputs/v013/validation_${n}.json
    done
    ```
 7. **100K: only after step 6 passes and the team approves (§15):**
    ```bash
-   python integration/generate_population.py 100000 --out-dir outputs/v012/100k_patients
-   python integration/validate_clinical_population.py outputs/v012/100k_patients --stats --json-out outputs/v012/validation_100k.json
-   python integration/freeze_dataset_manifest.py --output-dir outputs/v012/100k_patients --validation-report outputs/v012/validation_100k.json --schema-version 0.12 --dataset-name synthetic_indian_cvd_population --dataset-version v0.12 --out outputs/v012/dataset_manifest.json
+   python integration/generate_population.py 100000 --out-dir outputs/v013/100k_patients
+   python integration/validate_clinical_population.py outputs/v013/100k_patients --stats --json-out outputs/v013/validation_100k.json
+   python integration/freeze_dataset_manifest.py --output-dir outputs/v013/100k_patients --validation-report outputs/v013/validation_100k.json --schema-version 0.13 --dataset-name synthetic_indian_cvd_population --dataset-version v0.13 --out outputs/v013/dataset_manifest.json
    ```
 8. Copy back only the reports, manifest and metrics. The 100K records stay out of
    git, and optionally go to a private S3 bucket. Commit the pilot output, reports
