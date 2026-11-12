@@ -5,6 +5,18 @@ Newest entries at the top. Do not revisit a decision without new evidence.
 
 ---
 
+## D022 — Review fixes: joint lipid model (no LDL clamp), HbA1c for diabetics, BP SBP-trend extrapolation, modeled onset; schema v0.9 → v0.10 (requested by human review 2026-11-12)
+
+**Decision.** (1) TC/ln(TG)/HDL drawn jointly from a trivariate normal: means solved from the INDIAB-17 category rates, SDs from ICMR-INDIAB phase I (PMC4016101), latent correlations (0.45, -0.40, 0.40) calibrated to INDIAB-17 dyslipidaemia 81.2% / LDL>=130 20.9% and the phase-I LDL SD. LDL stays Friedewald with **no clamp**: panels with LDL<30, TG>400 or out-of-range TC/HDL are rejected whole. (2) Diabetic HbA1c: log-normal with P(<7%)=36.3% (INDIAB-13) and SD 2.2; observed for treated, borrowed (confidence low) for untreated. (3) BP above NFHS-5 coverage: mean SBP on NFHS-5's own linear trend, DBP/SDs held; `confidence` field. (4) Modeled onset age/date per diagnosis from prevalence-by-age curves (NFHS-5 BP model; LASI diabetes), tagged modeled; diagnosed_date stays null. (5) Age rounded to 2 dp; empty-value convention documented (None = not modeled, [] = none).
+
+**Reason.** Reviewer found implausible lipid triples, a silent LDL=30 clamp (7.3% of records), frozen BP/pulse pressure above age 54/49, no glycaemic marker for diabetics, and no longitudinal dimension.
+
+**Alternatives considered.** Sample LDL and derive TC (breaks the derived-LDL contract); copula over the old uniform marginals (needed TC-TG r=0.8 to fit); LDL=null when TG>400 (open); Synthea for longitudinal (strategic, not chosen); deriving hyperlipidemia from the panel (reverses D014 -- left for human decision).
+
+**Consequences.** v0.10 records differ from v0.9 in lipids/HbA1c/BP; demographics and risk-factor flags unchanged for the same seed. Lipids/HbA1c now use child RNG streams. Frozen 100K remains v0.9 until a regeneration is approved. Full evidence: `docs/V010_CHANGE_REPORT.md`, `docs/V010_REVIEW_COHORT_CHECKS.json`.
+
+---
+
 ## D021 — Air quality: 2023 CPCB state annual-mean AQI as a deterministic lookup, urban bias flagged per record; schema v0.8 → v0.9 (human-approved)
 
 **Date:** 2026-11-10

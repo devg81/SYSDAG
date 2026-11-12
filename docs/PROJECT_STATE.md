@@ -1292,6 +1292,14 @@ parameter count.
 
 # Last Updated
 
+2026-11-12 (later) — Schema v0.10 (D022) implemented from the external
+review: joint lipid model with no LDL clamp, HbA1c for diabetics, BP
+SBP-trend extrapolation with confidence flag, modeled onset ages. 187/187
+tests; 5,000-record cohort checks in `docs/V010_CHANGE_REPORT.md`. The
+frozen dataset is still v0.9 (`outputs/m9/100k_patients_v09/`). Next
+action: human decisions on the report's open questions (esp. D014
+hyperlipidemia derivation), then approve a v0.10 100K regeneration (~2 h).
+
 2026-11-12 — Pre-ECG patient layer CONFIRMED COMPLETE: D019 + D020 + D021
 are all in the frozen v0.9 dataset (`outputs/m9/100k_patients_v09/`,
 100,000 records, 0 errors, checksum `53fcae20…d1e`, generated 2026-11-10).

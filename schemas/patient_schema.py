@@ -1,6 +1,20 @@
-"""Patient record data model — Schema v0.9 (see SCHEMA_VERSION below).
+"""Patient record data model — Schema v0.10 (see SCHEMA_VERSION below).
 
 v0.9 (D020/D021): family_history populated; air_quality added.
+v0.10 (D022): joint lipid model (no LDL clamp); HbA1c for every patient
+(Lab.derivation/confidence); BP confidence; modeled condition onset on
+Diagnosis (age_at_onset_years/onset_date, always tagged modeled) plus a
+condition_onset_modeled timeline event; age rounded to 2 decimals.
+
+EMPTY-VALUE CONVENTION (v0.10): `None` = NOT MODELED by this generator
+(e.g. height_cm, echo, diagnosed_date, medication start_date). `[]` =
+modeled, and nothing applies (e.g. a patient with no diagnoses has
+diagnoses == []). A list field is never None when the generator models it.
+
+TREATMENT NOTE: medications are independent Bernoulli draws per condition
+(NNMS 14.5% antihypertensive / 36.1% antidiabetic), so most hypertensives
+are UNTREATED and "hypertension + diabetes" does NOT imply both treated.
+Test fixtures must not assume otherwise.
 
 Model-independent data contract for a synthetic cardiovascular patient
 record. Fields not yet populated by any pipeline stage are left `None`/empty
@@ -13,7 +27,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Optional
 
-SCHEMA_VERSION = "0.9"
+SCHEMA_VERSION = "0.10"
 
 SMOKING_STATUSES = {"never", "former", "current"}  # controlled vocabulary; see RiskFactors
 
@@ -67,7 +81,9 @@ ENCOUNTER_TYPES = {"synthetic_baseline_assessment"}
 # diagnosis-onset, medication-start or follow-up event is ever emitted
 # (no evidence-backed per-patient date distribution exists for any of
 # them -- docs/M4_CLINICAL_EVIDENCE.md §7).
-TIMELINE_EVENT_TYPES = {"synthetic_record_created", "synthetic_baseline_assessment"}
+# v0.10: + condition_onset_modeled -- a MODELED (not observed) onset,
+# referencing the Diagnosis whose onset_date it indexes.
+TIMELINE_EVENT_TYPES = {"synthetic_record_created", "synthetic_baseline_assessment", "condition_onset_modeled"}
 
 # Expected unit per known analyte, for structural (not clinical) validation
 # — i.e. "is this the unit this analyte is normally reported in," not "is
@@ -123,6 +139,8 @@ class Lab:
     unit: str  # e.g. "%" — see ANALYTE_UNITS for known analyte/unit pairs
     value: Optional[float] = None
     measured_at: Optional[str] = None  # ISO 8601 date; engineering-generated, not evidence-derived
+    derivation: Optional[str] = None  # v0.10: which distribution produced the value (see config)
+    confidence: Optional[str] = None  # v0.10: "moderate" | "low"
 
 
 @dataclass
@@ -151,6 +169,7 @@ class BloodPressure:
     age_band_source: Optional[str] = None  # e.g. "NFHS-5 male 40-44"
     extrapolated_beyond_source_age_range: Optional[bool] = None  # True once age > source coverage
     source: str = "derived_conditional_on_hypertension_label"
+    confidence: Optional[str] = None  # v0.10: "low" iff extrapolated (SBP trend-extrapolated), else "moderate"
 
 
 AQI_CATEGORIES = ("Good", "Satisfactory", "Moderate", "Poor", "Very Poor", "Severe")
@@ -232,8 +251,14 @@ class Diagnosis:
 
     diagnosis_id: str  # e.g. "PAT_000001_DX01"
     code: str  # one of DIAGNOSIS_CODES
-    diagnosed_date: Optional[str] = None  # ISO 8601; None -- no evidence-backed per-patient onset distribution exists (docs/M4_CLINICAL_EVIDENCE.md §7)
+    diagnosed_date: Optional[str] = None  # ISO 8601; None -- diagnosis timing is not modeled (onset is, below; ~half of cases are undiagnosed)
     source: str = "derived_from_risk_factors"
+    # v0.10 -- MODELED, never observed: onset sampled from a prevalence-by-age
+    # curve (configs/indian_population.yaml onset_model). Always <= current age.
+    age_at_onset_years: Optional[float] = None
+    onset_date: Optional[str] = None  # assessment date minus (age - age_at_onset_years)
+    onset_derivation: Optional[str] = None
+    onset_confidence: Optional[str] = None
 
 
 @dataclass
@@ -318,7 +343,7 @@ class Patient:
     medical_history: Optional[list[MedicalHistoryEntry]] = None  # M4D — derived from diagnoses, docs/DECISIONS.md D015
     diagnoses: Optional[list[Diagnosis]] = None  # M4D — derived from risk_factors, docs/DECISIONS.md D015
     medications: Optional[list[Medication]] = None  # M4E — derived from diagnoses + treatment rate, docs/DECISIONS.md D016
-    labs: Optional[list[Lab]] = None  # M4A — schema only, not yet populated (docs/DECISIONS.md D012)
+    labs: Optional[list[Lab]] = None  # v0.10: always a list (HbA1c for every patient); [] would mean modeled-but-none
     blood_pressure: Optional[BloodPressure] = None  # M8 — conditional on the hypertension label, see BloodPressure
     air_quality: Optional[AirQuality] = None  # D021 — state lookup, see AirQuality
     encounters: Optional[list[Encounter]] = None  # M8 — structural baseline-assessment container only, see ENCOUNTER_TYPES

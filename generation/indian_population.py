@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
+from statistics import NormalDist
 from typing import Any, Optional
 
 import numpy as np
@@ -50,7 +51,8 @@ def _sample_categorical(rng: np.random.Generator, categories: dict[str, float]) 
 
 def sample_age(rng: np.random.Generator, config: dict[str, Any]) -> float:
     dist = config["demographics"]["age"]["distribution"]
-    return float(rng.uniform(dist["min"], dist["max"]))
+    # v0.10: 2 decimals (~4 days) -- the float's 14 decimals were false precision.
+    return round(float(rng.uniform(dist["min"], dist["max"])), 2)
 
 
 def sample_sex(rng: np.random.Generator, config: dict[str, Any]) -> int:
@@ -109,58 +111,74 @@ def sample_hyperlipidemia(rng: np.random.Generator, config: dict[str, Any]) -> b
 
 
 _LIPID_MAX_REDRAW_ATTEMPTS = 1000
+_N01 = NormalDist()
+
+
+def lipid_joint_parameters(config: dict[str, Any]) -> dict[str, Any]:
+    """Means/SDs/correlation for the v0.10 joint lipid model (issue 1).
+
+    Location is NOT a free parameter: each mean is solved so the national
+    ICMR-INDIAB-17 category rate (the same tier-A rates v0.9 used) is
+    reproduced exactly, given the dispersion reported by the ICMR-INDIAB
+    phase-I lipid paper (PMC4016101, Table 3). See the config's
+    lipid_panel.joint_model block for every number's source."""
+    lp = config["risk_factors"]["lipid_panel"]
+    jm = lp["joint_model"]
+    p_tc_high = lp["total_cholesterol"]["distribution"]["categories"]["high"]
+    p_tg_high = lp["triglycerides"]["distribution"]["categories"]["high"]
+    p_hdl_low = lp["hdl"]["distribution"]["categories_by_sex"]
+    hdl_cut = jm["hdl_low_cutoff_by_sex"]
+    sd_tc, sd_hdl = jm["total_cholesterol_sd"], jm["hdl_sd"]
+    sig_tg = jm["triglycerides_log_sd"]
+    return {
+        "mu_tc": jm["total_cholesterol_threshold"] - _N01.inv_cdf(1 - p_tc_high) * sd_tc,
+        "sd_tc": sd_tc,
+        "mu_log_tg": math.log(jm["triglycerides_threshold"]) - sig_tg * _N01.inv_cdf(1 - p_tg_high),
+        "sig_log_tg": sig_tg,
+        "mu_hdl": {
+            k: hdl_cut[k] - _N01.inv_cdf(p_hdl_low[k]["low"]) * sd_hdl for k in ("male", "female")
+        },
+        "sd_hdl": sd_hdl,
+        "chol": np.linalg.cholesky(np.array(jm["latent_correlation"]["matrix_tc_logtg_hdl"], dtype=float)),
+        "bounds": jm["rejection_bounds"],
+    }
 
 
 def sample_lipid_panel(rng: np.random.Generator, config: dict[str, Any], sex: int) -> dict[str, float]:
-    """TC, TG, HDL sampled (category-then-uniform, evidence-backed
-    marginal categories); LDL DERIVED via the Friedewald equation, never
-    independently sampled — docs/M4B_GENERATION_DESIGN.md A2 (the same
-    formula ICMR-INDIAB-17 itself used).
+    """v0.10 (issue 1): TC, ln(TG), HDL drawn JOINTLY from one trivariate
+    normal; LDL DERIVED by Friedewald (LDL = TC - HDL - TG/5), never
+    sampled and never clamped.
 
-    A triple where TC < HDL + TG/5 makes the Friedewald LDL negative —
-    a physical impossibility (measured at 2.28% of 100,000 records,
-    docs/M8_FULL_DATASET_VALIDATION_REPORT.md §4) — not merely a low
-    LDL. Per the approved fix (docs/DECISIONS.md D019, "reject-and-redraw"),
-    such triples are discarded and redrawn from the exact same
-    evidence-backed marginals; no new correlation or assumption is
-    introduced, only infeasible combinations are excluded. This does
-    NOT address the separate, smaller LDL-clip-floor population (low_raw
-    in [0, 30) rounding up to the 30 mg/dL floor, 9.83% of records) —
-    those are physiologically plausible low-LDL draws, not impossible
-    ones, and are left exactly as before."""
-    lp = config["risk_factors"]["lipid_panel"]
+    v0.9 drew the three independently (category-then-uniform), which lost
+    the real TG/HDL and TC/TG dependence and needed a [30, 300] LDL clamp
+    that silently piled 7.7% of records at exactly 30.0. Here a draw whose
+    derived LDL falls below the physiological rejection floor, or whose TG
+    exceeds 400 mg/dL (Friedewald's validity limit), or that leaves the
+    plausible TC/HDL range, is REJECTED AND REDRAWN as a whole panel --
+    no value is ever moved to a bound. Exhausting the retry budget raises
+    instead of returning a clamped value."""
+    jp = lipid_joint_parameters(config)
+    b = jp["bounds"]
     sex_key = "male" if sex == 0 else "female"
-
-    tc_dist = lp["total_cholesterol"]["distribution"]
-    tg_dist = lp["triglycerides"]["distribution"]
-    hdl_dist = lp["hdl"]["distribution"]
-    ldl_dist = lp["ldl"]["distribution"]
-    low, high = ldl_dist["clip_range"]
-
     for _ in range(_LIPID_MAX_REDRAW_ATTEMPTS):
-        total_cholesterol = _sample_category_then_uniform(
-            rng, tc_dist["categories"], tc_dist["category_ranges"]
-        )
-        triglycerides = _sample_category_then_uniform(
-            rng, tg_dist["categories"], tg_dist["category_ranges"]
-        )
-        hdl = _sample_category_then_uniform(
-            rng, hdl_dist["categories_by_sex"][sex_key], hdl_dist["category_ranges_by_sex"][sex_key]
-        )
-        ldl_raw = total_cholesterol - hdl - triglycerides / 5.0
-        if ldl_raw >= 0:
-            break
-    # Safety net only — at the measured 97.72% per-draw feasibility rate,
-    # exhausting 1000 attempts has effectively zero probability; the clip
-    # floor below still applies to the (now impossible-triple-free) result.
-    ldl = round(float(min(max(ldl_raw, low), high)), 1)
-
-    return {
-        "total_cholesterol_mg_dl": total_cholesterol,
-        "triglycerides_mg_dl": triglycerides,
-        "hdl_mg_dl": hdl,
-        "ldl_mg_dl": ldl,
-    }
+        z = jp["chol"] @ rng.standard_normal(3)
+        tc = round(float(jp["mu_tc"] + jp["sd_tc"] * z[0]), 1)
+        tg = round(float(math.exp(jp["mu_log_tg"] + jp["sig_log_tg"] * z[1])), 1)
+        hdl = round(float(jp["mu_hdl"][sex_key] + jp["sd_hdl"] * z[2]), 1)
+        ldl = round(tc - hdl - tg / 5.0, 1)
+        if (
+            b["tc_min"] <= tc <= b["tc_max"]
+            and tg <= b["tg_max_friedewald"]
+            and b["hdl_min"] <= hdl <= b["hdl_max"]
+            and ldl >= b["ldl_min"]
+        ):
+            return {
+                "total_cholesterol_mg_dl": tc,
+                "triglycerides_mg_dl": tg,
+                "hdl_mg_dl": hdl,
+                "ldl_mg_dl": ldl,
+            }
+    raise RuntimeError("lipid panel: no admissible draw in retry budget -- check joint_model bounds")
 
 
 def derive_lipid_interpretations(
@@ -195,32 +213,84 @@ def derive_lipid_interpretations(
     return interpretations
 
 
+def _diabetic_hba1c_lognormal(dist: dict[str, Any]) -> tuple[float, float]:
+    """(mu, sigma) of the log-normal whose SD equals `sd` and whose
+    P(HbA1c < control_threshold) equals the observed controlled share.
+    Solved by bisection on the mean -- both targets are published figures,
+    so no free parameter is left."""
+    sd, thr, p_ctrl = dist["sd"], dist["control_threshold"], dist["p_below_control_threshold"]
+
+    def params(mean: float) -> tuple[float, float]:
+        sig = math.sqrt(math.log(1.0 + (sd / mean) ** 2))
+        return math.log(mean) - sig * sig / 2.0, sig
+
+    lo, hi = 4.0, 20.0
+    for _ in range(100):
+        mid = (lo + hi) / 2.0
+        mu, sig = params(mid)
+        if _N01.cdf((math.log(thr) - mu) / sig) > p_ctrl:
+            lo = mid
+        else:
+            hi = mid
+    return params((lo + hi) / 2.0)
+
+
 def sample_hba1c(
-    rng: np.random.Generator, config: dict[str, Any], age: float, sex: int, diabetes: bool
-) -> Optional[float]:
-    """Conditional on the already-generated `diabetes` label (D011's
-    reversed-direction finding for HbA1c) — never used to derive it.
-    Only generated for non-diabetic (NGT) patients; diabetic-population
-    HbA1c has insufficient evidence (docs/M4B_GENERATION_DESIGN.md A4)."""
-    if diabetes:
-        return None
-    dist = config["risk_factors"]["hba1c"]["distribution"]
-    sex_key = "male" if sex == 0 else "female"
-    slope = dist["sex_decade_slope"][sex_key]
-    mean = dist["baseline_mean_at_age_25"] + slope * (age - dist["reference_age"]) / 10.0
-    value = rng.normal(mean, dist["sd"])
-    low, high = dist["clip_range"]
-    return round(float(min(max(value, low), high)), 2)
+    rng: np.random.Generator,
+    config: dict[str, Any],
+    age: float,
+    sex: int,
+    diabetes: bool,
+    on_antidiabetic: bool = False,
+) -> dict[str, Any]:
+    """HbA1c, always CONDITIONAL on the already-generated diabetes label,
+    never used to derive it (D011). Returns {value, derivation, confidence}.
+
+    - Non-diabetic: ICMR-INDIAB-12 NGT age x sex trend (unchanged from v0.9).
+    - Diabetic (new in v0.10, issue 3): log-normal fitted to ICMR-INDIAB-13's
+      national share with HbA1c < 7% (36.3%) and the phase-I SD (~2.2).
+      That source covers SELF-REPORTED (known, mostly treated) diabetes, so
+      it is applied as observed to treated patients and BORROWED, flagged
+      low-confidence, for untreated ones (incl. undiagnosed) -- no Indian
+      source for that group was located."""
+    if not diabetes:
+        dist = config["risk_factors"]["hba1c"]["distribution"]
+        sex_key = "male" if sex == 0 else "female"
+        slope = dist["sex_decade_slope"][sex_key]
+        mean = dist["baseline_mean_at_age_25"] + slope * (age - dist["reference_age"]) / 10.0
+        value = rng.normal(mean, dist["sd"])
+        low, high = dist["clip_range"]
+        return {
+            "value": round(float(min(max(value, low), high)), 2),
+            "derivation": "observed_distribution_indiab12_ngt",
+            "confidence": "moderate",
+        }
+    dist = config["risk_factors"]["hba1c_diabetes"]["distribution"]
+    mu, sig = _diabetic_hba1c_lognormal(dist)
+    low, high = dist["rejection_bounds"]
+    for _ in range(_LIPID_MAX_REDRAW_ATTEMPTS):
+        value = round(float(math.exp(rng.normal(mu, sig))), 2)
+        if low <= value <= high:
+            break
+    else:
+        raise RuntimeError("diabetic HbA1c: no admissible draw in retry budget")
+    if on_antidiabetic:
+        return {"value": value, "derivation": "observed_distribution_indiab13_self_reported_diabetes", "confidence": "moderate"}
+    return {"value": value, "derivation": "borrowed_from_indiab13_self_reported_diabetes_untreated_unsourced", "confidence": "low"}
 
 
 def _bp_band(config: dict[str, Any], age: float, sex: int) -> tuple[list[float], str, bool]:
     """Pick the NFHS-5 age band for this patient.
 
-    Above the source's own age coverage (men >54, women >49) the OLDEST
-    available band is held constant -- the conservative choice, since BP
-    keeps rising with age, so this UNDERSTATES rather than invents a
-    continuing trend. The returned flag is written onto the record so
-    those patients stay machine-filterable.
+    v0.10 (issue 2): above the source's age coverage (men >54, women >49)
+    the mean SBP is EXTRAPOLATED along the linear trend NFHS-5 itself shows
+    across its bands from `fit_from_age` upward (least squares on band
+    midpoints), evaluated at the patient's whole-year age. Mean DBP and both
+    SDs stay at the oldest band: NFHS-5's own DBP increments already shrink
+    toward zero in the oldest bands, and DBP is widely reported to plateau
+    after ~50-60 (non-Indian prior, labelled in the config) -- so pulse
+    pressure now widens with age instead of staying frozen. Records stay
+    flagged extrapolated and get confidence "low".
     """
     dist = config["risk_factors"]["blood_pressure"]["distribution"]
     sex_key = "male" if sex == 0 else "female"
@@ -228,12 +298,24 @@ def _bp_band(config: dict[str, Any], age: float, sex: int) -> tuple[list[float],
     coverage_max = dist["source_age_coverage_max_by_sex"][sex_key]
     # `age` is continuous but the source's bands are stated in whole
     # years, where "50-54" means everyone who has turned 50 and not yet
-    # 55. So match half-open on [low, high+1) -- matching inclusively on
-    # [low, high] would drop every patient whose age has a fractional
-    # part (e.g. 24.6 belongs to the 20-24 band, not to a gap).
+    # 55. So match half-open on [low, high+1).
     extrapolated = age >= coverage_max + 1
-    band = bands[-1] if extrapolated else next(b for b in bands if b[0] <= age < b[1] + 1)
-    return band, f"NFHS-5 {sex_key} {int(band[0])}-{int(band[1])}", bool(extrapolated)
+    if not extrapolated:
+        band = next(b for b in bands if b[0] <= age < b[1] + 1)
+        return band, f"NFHS-5 {sex_key} {int(band[0])}-{int(band[1])}", False
+    fit_from = dist["beyond_coverage_extrapolation"]["fit_from_age"]
+    fit = [b for b in bands if b[0] >= fit_from]
+    x = np.array([(b[0] + b[1] + 1) / 2.0 for b in fit])
+    y = np.array([b[2] for b in fit])
+    slope, intercept = np.polyfit(x, y, 1)
+    whole_age = math.floor(age)  # whole years keeps the PMF cache small (<=70 keys per region)
+    last = list(bands[-1])
+    last[2] = round(float(intercept + slope * (whole_age + 0.5)), 2)
+    label = (
+        f"NFHS-5 {sex_key} {int(bands[-1][0])}-{int(bands[-1][1])} DBP/SDs; SBP linear trend "
+        f"(bands {fit_from}-{int(bands[-1][1])}, {slope:+.2f} mmHg/yr) extrapolated to age {whole_age}"
+    )
+    return last, label, True
 
 
 def _bp_region(hypertension: bool, on_antihypertensive: bool) -> str:
@@ -390,6 +472,7 @@ def sample_blood_pressure(
         "diastolic_mm_hg": int(dbp_flat[idx]),
         "age_band_source": band_label,
         "extrapolated_beyond_source_age_range": extrapolated,
+        "confidence": "low" if extrapolated else "moderate",
     }
 
 
@@ -517,6 +600,91 @@ def sample_family_history(
     }
 
 
+_HTN_PREV_CACHE: dict[tuple[int, int], float] = {}
+
+
+def _hypertension_prevalence_at(config: dict[str, Any], whole_age: int, sex: int) -> float:
+    """P(SBP>=140 or DBP>=90) at a whole-year age, read off the SAME
+    NFHS-5 bivariate BP distribution sample_blood_pressure() uses
+    (extrapolated above coverage exactly as there). Measured-BP prevalence,
+    so it excludes treated-and-controlled people -- used only for the
+    SHAPE of the age curve, not as a prevalence claim."""
+    key = (whole_age, sex)
+    if key not in _HTN_PREV_CACHE:
+        dist = config["risk_factors"]["blood_pressure"]["distribution"]
+        lc = dist["label_conditioning"]
+        band, _, _ = _bp_band(config, whole_age + 0.5, sex)
+        cdf, sbp, dbp = _bp_joint_pmf(
+            tuple(float(v) for v in band),
+            "unconstrained",
+            float(dist["sbp_dbp_correlation"]["value"]),
+            tuple(int(v) for v in dist["sbp_bounds"]),
+            tuple(int(v) for v in dist["dbp_bounds"]),
+            int(lc["sbp_threshold"]),
+            int(lc["dbp_threshold"]),
+            int(dist["min_pulse_pressure_mm_hg"]),
+        )
+        pmf = np.diff(cdf, prepend=0.0)
+        raised = (sbp >= lc["sbp_threshold"]) | (dbp >= lc["dbp_threshold"])
+        _HTN_PREV_CACHE[key] = float(pmf[raised].sum())
+    return _HTN_PREV_CACHE[key]
+
+
+def _diabetes_prevalence_at(config: dict[str, Any], age: float, sex: int) -> float:
+    anchors = config["onset_model"]["diabetes_prevalence_anchors_by_sex"]["male" if sex == 0 else "female"]
+    xs = [float(a[0]) for a in anchors]
+    ys = [float(a[1]) for a in anchors]
+    return float(np.interp(age, xs, ys))
+
+
+def _sample_onset_age(rng: np.random.Generator, age: float, prevalence, zero_age: float) -> float:
+    """Onset age given the condition is present at `age`.
+
+    Treats the cross-sectional prevalence-by-age curve P(a) as cumulative
+    incidence (no cohort effect, no differential mortality, no remission
+    -- all stated in the config), so onset has CDF P(a)/P(age) on
+    [zero_age, age], with P(zero_age) = 0 as a stated assumption.
+    Inverse-CDF on a whole-year grid with linear interpolation. Onset can
+    never exceed `age` by construction."""
+    inner = np.arange(math.floor(zero_age) + 1, math.floor(age) + 1, dtype=float)
+    grid = np.concatenate(([zero_age], inner[inner < age], [age]))
+    p = np.concatenate(([0.0], [prevalence(g) for g in grid[1:]]))
+    p = np.maximum.accumulate(p)
+    if p[-1] <= 0.0:
+        return math.floor(age * 10) / 10.0
+    target = rng.random() * p[-1]
+    keep = np.concatenate(([True], np.diff(p) > 0))  # np.interp needs strictly increasing x
+    onset = float(np.interp(target, p[keep], grid[keep]))
+    return min(math.floor(onset * 10) / 10.0, age)
+
+
+def sample_onset_ages(
+    rng: np.random.Generator, config: dict[str, Any], age: float, sex: int, hypertension: bool, diabetes: bool
+) -> dict[str, dict[str, Any]]:
+    """v0.10 (issue 4, option b): modeled onset age per present condition.
+    Every value is tagged derivation=modeled; nothing here is observed."""
+    out: dict[str, dict[str, Any]] = {}
+    if hypertension:
+        out["hypertension"] = {
+            "age_at_onset_years": _sample_onset_age(
+                rng, age, lambda a: _hypertension_prevalence_at(config, int(math.floor(a)), sex),
+                config["onset_model"]["zero_prevalence_age"]["hypertension"],
+            ),
+            "onset_derivation": "modeled_from_nfhs5_bp_age_curve",
+            "onset_confidence": "low",
+        }
+    if diabetes:
+        out["diabetes"] = {
+            "age_at_onset_years": _sample_onset_age(
+                rng, age, lambda a: _diabetes_prevalence_at(config, a, sex),
+                config["onset_model"]["zero_prevalence_age"]["diabetes"],
+            ),
+            "onset_derivation": "modeled_from_lasi_age_prevalence",
+            "onset_confidence": "low",
+        }
+    return out
+
+
 def aqi_category(config: dict[str, Any], aqi: float) -> str:
     """CPCB National AQI category (upper bounds inclusive, config order)."""
     for category, upper in config["environment"]["air_quality"]["category_breakpoints"].items():
@@ -571,10 +739,16 @@ def generate_indian_attributes(rng: np.random.Generator, config: dict[str, Any])
     hypertension = sample_hypertension(rng, config)
     diabetes = sample_diabetes(rng, config)
     hyperlipidemia = sample_hyperlipidemia(rng, config)
-    lipid_values = sample_lipid_panel(rng, config, sex)
+    # v0.10: lipids and HbA1c each draw from their own child stream (one
+    # parent draw each), so their variable-length rejection loops can never
+    # shift any later field's random numbers again.
+    lipid_values = sample_lipid_panel(np.random.default_rng(int(rng.integers(2**63))), config, sex)
     lipid_interpretations = derive_lipid_interpretations(config, lipid_values, sex)
-    hba1c = sample_hba1c(rng, config, age, sex, diabetes)
+    hba1c_rng = np.random.default_rng(int(rng.integers(2**63)))
     medication_treatment = sample_medication_treatment(rng, config, hypertension, diabetes)
+    hba1c = sample_hba1c(
+        hba1c_rng, config, age, sex, diabetes, on_antidiabetic=medication_treatment.get("diabetes", False)
+    )
     # M8 -- LAST in the draw order on purpose. Every pre-existing field
     # consumes the rng stream before BP does, so adding BP leaves all of
     # them byte-identical for the same seed (verified in
@@ -592,6 +766,8 @@ def generate_indian_attributes(rng: np.random.Generator, config: dict[str, Any])
     # D020 -- after BP for the same reason BP is last: every earlier field
     # stays byte-identical for the same seed.
     family_history = sample_family_history(rng, config, age, diabetes)
+    # v0.10 -- last, same reasoning.
+    onset = sample_onset_ages(rng, config, age, sex, hypertension, diabetes)
 
     return {
         "demographics": {
@@ -616,6 +792,7 @@ def generate_indian_attributes(rng: np.random.Generator, config: dict[str, Any])
         "blood_pressure": blood_pressure,
         "family_history": family_history,
         "air_quality": derive_air_quality(config, state),
+        "onset": onset,
     }
 
 

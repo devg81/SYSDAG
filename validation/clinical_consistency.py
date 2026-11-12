@@ -155,6 +155,14 @@ def validate_clinical_consistency(
                 f"lipid_panel implies LDL {implied_ldl:.1f} mg/dL, below the documented "
                 "clip floor of 30.0, so the stored LDL was clipped rather than derived"
             )
+        # v0.10 (D022): the stored LDL must BE the Friedewald value (to
+        # rounding) -- catches any clamp/floor reintroduced anywhere. Warning,
+        # not error, so pre-v0.10 datasets (which clamped at 30) still load.
+        if lp.ldl_mg_dl is not None and abs(lp.ldl_mg_dl - implied_ldl) > 0.11:
+            warnings.append(
+                f"stored LDL {lp.ldl_mg_dl} != Friedewald {implied_ldl:.1f} -- LDL was "
+                "clamped or independently set, not derived"
+            )
         if lp.triglycerides_mg_dl > 400.0:
             warnings.append(
                 f"triglycerides {lp.triglycerides_mg_dl} mg/dL exceed 400, above which "
@@ -166,22 +174,20 @@ def validate_clinical_consistency(
     diabetes = patient.risk_factors.diabetes if patient.risk_factors is not None else None
     hba1c_entries = [lab for lab in (patient.labs or []) if lab.analyte == "HbA1c"]
 
-    if diabetes is True and hba1c_entries:
-        errors.append(
-            "labs contains an HbA1c entry for a diabetic patient -- not "
-            "evidence-supported for M4B (docs/M4_CLINICAL_EVIDENCE.md)"
-        )
-    if diabetes is False and not hba1c_entries:
-        errors.append("non-diabetic patient is missing the expected HbA1c lab entry")
+    # v0.10 (D022): every patient carries HbA1c; the allowed range depends
+    # on the label it is conditioned on (never the reverse).
+    if diabetes is not None and not hba1c_entries:
+        errors.append("patient is missing the expected HbA1c lab entry (v0.10: generated for everyone)")
     if len(hba1c_entries) > 1:
         errors.append(f"expected at most one HbA1c entry, found {len(hba1c_entries)}")
+    low, high = (4.0, 18.0) if diabetes else (4.0, 6.4)
     for lab in hba1c_entries:
-        if lab.value is not None and not (4.0 <= lab.value <= 6.4):
-            errors.append(f"HbA1c value {lab.value} outside the documented generation range [4.0, 6.4]")
+        if lab.value is not None and not (low <= lab.value <= high):
+            errors.append(f"HbA1c value {lab.value} outside the documented generation range [{low}, {high}]")
         if lab.unit != "%":
             errors.append(f"HbA1c unit {lab.unit!r} != '%'")
 
-    if indian_config is not None and hba1c_entries and patient.demographics is not None:
+    if indian_config is not None and hba1c_entries and patient.demographics is not None and not diabetes:
         checks.append("hba1c_plausibility_given_age_sex")
         dist = indian_config["risk_factors"]["hba1c"]["distribution"]
         sex_key = "male" if patient.demographics.sex == 0 else "female"
@@ -200,6 +206,23 @@ def validate_clinical_consistency(
                 f"expected mean {expected_mean:.2f} (sd={sd}) -- statistically "
                 "implausible, worth a second look"
             )
+
+    # --- v0.10 (D022): modeled onset must be tagged and never after "now" ---
+    checks.append("modeled_onset_consistency")
+    if patient.diagnoses and patient.demographics is not None:
+        for dx in patient.diagnoses:
+            if dx.age_at_onset_years is None:
+                continue
+            if not (15.0 <= dx.age_at_onset_years <= patient.demographics.age):
+                errors.append(
+                    f"diagnosis {dx.diagnosis_id}: age_at_onset_years {dx.age_at_onset_years} "
+                    f"outside [15, age {patient.demographics.age}]"
+                )
+            if not (dx.onset_derivation or "").startswith("modeled"):
+                errors.append(f"diagnosis {dx.diagnosis_id}: onset present but not tagged modeled")
+            enc_dates = [e.date for e in (patient.encounters or [])]
+            if dx.onset_date and enc_dates and dx.onset_date > max(enc_dates):
+                errors.append(f"diagnosis {dx.diagnosis_id}: onset_date {dx.onset_date} after the assessment")
 
     # --- Intentionally distinct variables (docs/DECISIONS.md D014, Option B) ---
     # risk_factors.hyperlipidemia (M2C: unconditioned Bernoulli(0.812), a
@@ -442,7 +465,16 @@ def validate_clinical_consistency(
         for i, event in enumerate(patient.clinical_timeline):
             if event.reference_id is None:
                 continue
-            if event.reference_id not in encounter_ids:
+            if event.event_type == "condition_onset_modeled":
+                # v0.10: references a Diagnosis, and its date must equal that
+                # diagnosis' modeled onset_date.
+                dx_onsets = {dx.diagnosis_id: dx.onset_date for dx in (patient.diagnoses or [])}
+                if dx_onsets.get(event.reference_id) != event.date:
+                    errors.append(
+                        f"clinical_timeline[{i}]: condition_onset_modeled {event.reference_id!r} "
+                        "does not match any diagnosis onset_date"
+                    )
+            elif event.reference_id not in encounter_ids:
                 errors.append(
                     f"clinical_timeline[{i}]: reference_id {event.reference_id!r} does "
                     "not resolve to any encounter on this record -- dangling reference"
@@ -469,7 +501,8 @@ def validate_clinical_consistency(
         )
         if created is not None:
             for i, event in enumerate(patient.clinical_timeline):
-                if event.date < created:
+                # v0.10: a modeled onset legitimately predates record creation.
+                if event.date < created and event.event_type != "condition_onset_modeled":
                     errors.append(
                         f"clinical_timeline[{i}]: date {event.date!r} precedes "
                         f"synthetic_record_created {created!r}"

@@ -653,10 +653,10 @@ risk_factors:
       year: null
       population: null
       geographic_scope: null
-      definition: "Friedewald equation; result clipped to [30, 300] mg/dL as an engineering safeguard against implausible arithmetic combinations"
+      definition: "Friedewald equation. v0.10: NEVER clipped -- a panel whose derived LDL < joint_model.rejection_bounds.ldl_min is rejected and redrawn whole (v0.9 clipped to [30, 300], which piled 7.7% of records at exactly 30.0)"
       available_stratification: "N/A -- derived, not sampled"
       marginal_or_conditional: "N/A"
-      transformation: "LDL = total_cholesterol - hdl - (triglycerides / 5), clipped to [30, 300]"
+      transformation: "LDL = total_cholesterol - hdl - (triglycerides / 5); no clipping (v0.10)"
       limitations: >-
         A real clinical formula, not an invented correlation -- but its
         OWN cited marginal rate (LDL>=130: 20.9%) is not directly used as
@@ -667,7 +667,63 @@ risk_factors:
       distribution:
         type: derived
         formula: "total_cholesterol - hdl - triglycerides / 5"
-        clip_range: [30.0, 300.0]
+
+    # ==== v0.10 (issue 1): JOINT lipid model ================================
+    # Replaces v0.9's independent category-then-uniform draws of TC/TG/HDL.
+    # The category rates in the three blocks above are KEPT and still
+    # determine each mean (location solved so the INDIAB-17 rate is hit);
+    # only the shape and the dependence are new.
+    joint_model:
+      source: >-
+        Dispersion: ICMR-INDIAB phase I lipid paper (Joshi SR et al., PLoS
+        One 2014, PMC4016101), Table 3, 4-region pooled adults: TC 158+/-40,
+        HDL 39+/-12, LDL 91+/-32 mg/dL, TG geometric mean 116 with 29.5%
+        >=150. Location: ICMR-INDIAB-17 category rates (blocks above).
+      shape: >-
+        TC ~ Normal, HDL ~ Normal (per-sex mean, shared SD), TG ~ LogNormal.
+        Engineering choice of family; standard for these analytes.
+      total_cholesterol_threshold: 200.0
+      triglycerides_threshold: 150.0
+      hdl_low_cutoff_by_sex: {male: 40.0, female: 50.0}
+      total_cholesterol_sd: 40.0
+      hdl_sd: 12.0
+      # sigma of ln(TG) from phase I: (ln150 - ln116) / z(1 - 0.295)
+      triglycerides_log_sd: 0.477
+      latent_correlation:
+        evidence_tier: >-
+          C (calibrated). No published Indian correlation coefficient between
+          lipid fractions was located (searched 2026-11-12; PMC4016101 reports
+          none). The three latent correlations were chosen by grid search to
+          reproduce three INDIAN targets the independent model missed:
+          INDIAB-17 composite dyslipidaemia 81.2% (got 80.6%), INDIAB-17
+          LDL>=130 20.9% (got 22.2%; independent model ~30%), and the
+          phase-I LDL SD 32 (got ~30). The fit is flat along a ridge of
+          (TC-TG, TG-HDL) pairs; within it the pair giving a moderate
+          negative TG-HDL correlation was chosen, matching the direction and
+          rough size commonly reported for TG vs HDL -- that tie-break is a
+          judgement, not a measurement.
+        order: [total_cholesterol, ln_triglycerides, hdl]
+        matrix_tc_logtg_hdl:
+          - [1.00, 0.45, 0.40]
+          - [0.45, 1.00, -0.40]
+          - [0.40, -0.40, 1.00]
+      rejection_bounds:
+        # Whole-panel reject-and-redraw, never clamp (~4.5% of draws).
+        ldl_min: 30.0
+        tg_max_friedewald: 400.0
+        tc_min: 80.0
+        tc_max: 400.0
+        hdl_min: 15.0
+        hdl_max: 120.0
+      tg_above_400_policy: >-
+        Not generated (rejected). About 0.6% of the fitted TG distribution
+        lies above 400 mg/dL, so very-high-TG patients are slightly
+        under-represented. Alternative not taken: emit LDL=null with reason
+        "Friedewald invalid, TG>400" -- more realistic, but breaks the
+        every-record-has-a-derived-LDL contract. Open question.
+      ldl_min_rationale: >-
+        30 mg/dL is an engineering physiological floor (the same value v0.9
+        clamped to). Now a rejection threshold: no value is ever moved to it.
 
   # Reference definitions used by generation/indian_population.py to
   # COMPUTE (never sample) LipidInterpretation entries. Both already
@@ -681,6 +737,12 @@ risk_factors:
       hdl_threshold_male: 40.0
       hdl_threshold_female: 50.0
       ldl_threshold: 130.0
+    # v0.10 (issue 6): LAI 2020 differs from NCEP ONLY in the LDL cutoff
+    # (100 vs 130), so the two agree unless 100 <= LDL < 130 (tested). The
+    # real LAI framework is RISK-TIERED (LDL goals <100 / <70 / <50 by risk
+    # category); this is its population-screening cutoff only. Tiering is
+    # not implemented -- it needs an ASCVD risk category this generator does
+    # not model (open question).
     LAI_2020:
       source_citation: "ICMR-INDIAB-25 (J Clin Lipidology, 2026) / Lipid Association of India"
       total_cholesterol_threshold: 200.0
@@ -729,7 +791,36 @@ risk_factors:
       sd: 0.70
       clip_range: [4.0, 6.4]
       unit: "%"
-      not_generated_for: "diabetic patients (risk_factors.diabetes == true) -- insufficient evidence"
+      not_generated_for: "diabetic patients -- they use hba1c_diabetes below (v0.10)"
+
+  # v0.10 (issue 3): HbA1c for DIABETIC patients, conditional on the label
+  # (same reversed direction as BP) -- never used to derive diabetes.
+  hba1c_diabetes:
+    source: >-
+      ICMR-INDIAB-13 (Anjana RM et al., Lancet Diabetes Endocrinol 2022;
+      10:430-441, PMID 35461575): 36.3% (95% CI 34.7-37.9) of 4,834 adults
+      with self-reported diabetes had HbA1c < 7.0%, national. SD: ICMR-INDIAB
+      phase I (Unnikrishnan et al., Diabetes Technol Ther 2014, PMC4135327),
+      regional SDs 2.0-2.4, 2.2 used.
+    population: "Adults with SELF-REPORTED (known) diabetes; 87% of phase I were on drugs"
+    transformation: >-
+      Log-normal whose SD = 2.2 and P(<7.0) = 0.363, mean solved by
+      bisection (about 8.0%, consistent with phase-I regional means
+      8.0-9.1). Values outside [4.0, 18.0] rejected and redrawn (no clamp).
+    limitations: >-
+      Applied as observed to diabetics drawn as TREATED. Untreated
+      diabetics (incl. undiagnosed, about half of Indian diabetes) get the
+      same distribution BORROWED and flagged confidence "low": no Indian
+      source for their HbA1c was located, and undiagnosed diabetes likely
+      has lower HbA1c than known diabetes. Not age/sex conditioned.
+    evidence_tier: "A for the controlled share; B for SD and log-normal shape; C for the untreated group"
+    distribution:
+      type: lognormal_calibrated
+      control_threshold: 7.0
+      p_below_control_threshold: 0.363
+      sd: 2.2
+      rejection_bounds: [4.0, 18.0]
+      unit: "%"
 
 
   # ==== M8 (pilot 50) -- NEW: blood pressure =============================
@@ -992,8 +1083,23 @@ risk_factors:
           - [45, 49, 124.71, 17.29, 82.27, 10.08]
       source_age_coverage_max_by_sex: {male: 54, female: 49}
       beyond_coverage_rule: >-
-        hold the oldest available band's mean and SD constant
-        (documented engineering extrapolation -- see limitations (a))
+        v0.10: mean SBP extrapolated along NFHS-5's own linear trend
+        (least squares over band midpoints, bands from fit_from_age up);
+        mean DBP and both SDs held at the oldest band. v0.9 held the oldest
+        band's mean and SD constant, which froze SBP and pulse pressure at
+        age 54 (men) / 49 (women).
+      beyond_coverage_extrapolation:
+        fit_from_age: 35
+        resulting_slopes_mm_hg_per_year: {male: 0.34, female: 0.68}
+        evidence_tier: >-
+          C. Trend fitted on Indian NFHS-5 data but applied beyond its
+          range. Holding DBP flat is supported directionally by NFHS-5
+          itself (men's DBP gains shrink to +0.5 mmHg per 5 years by 45-54)
+          and by the DBP plateau after ~50-60 reported in non-Indian
+          cohorts (Franklin et al., Circulation 1997) -- a non-Indian prior,
+          labelled as such. Every such record carries
+          extrapolated_beyond_source_age_range=true and confidence="low".
+        better_source_if_found: "LASI Wave 1 measured BP means by age band (45+) -- not located 2026-11-12"
       source_reported_means_and_cis:
         note: >-
           The source reports mean + 95% CI + n; the SDs above were
@@ -1081,6 +1187,31 @@ risk_factors:
 # drug-name distribution exists anywhere researched (docs/
 # M4E_MEDICATION_EVIDENCE.md). Statin/antiplatelet treatment rates:
 # NOT SUPPORTED at population level -- not represented here at all.
+# v0.10 (issue 4): modeled age of onset for present conditions -- option
+# (b) of the review. NOTHING here is an observed per-patient date; every
+# output is tagged derivation=modeled, confidence=low.
+onset_model:
+  method: >-
+    Given the condition is present at age A, onset ~ CDF P(a)/P(A) on
+    [zero_prevalence_age, A], P = cross-sectional prevalence by age.
+  assumptions: >-
+    (1) the cross-sectional prevalence curve approximates cumulative
+    incidence -- ignores cohort effects, differential mortality and
+    remission; (2) P = 0 at zero_prevalence_age; (3) onset = condition
+    first present, NOT diagnosis -- diagnosed_date stays null (about half of
+    Indian diabetes and most hypertension is undiagnosed).
+  zero_prevalence_age: {hypertension: 20, diabetes: 20}  # adults-only cohort; onset before 20 not modeled
+  hypertension_curve: >-
+    P(SBP>=140 or DBP>=90 | age, sex) read off the NFHS-5 BP model in
+    risk_factors.blood_pressure (incl. its extrapolation above coverage).
+  diabetes_prevalence_anchors_by_sex:
+    # [age, prevalence]; LASI Wave 1 self-reported diabetes (the same
+    # parent_rates family_history uses): 45-59 placed at 52, 60+ at 68
+    # (engineering placement); 0 at 20 assumed; linear between, flat after.
+    male: [[20, 0.0], [52, 0.102], [68, 0.145]]
+    female: [[20, 0.0], [52, 0.087], [68, 0.139]]
+  evidence_tier: "C (model-derived from tier-A curves)"
+
 medications:
   antihypertensive_treatment_rate:
     source: "ICMR-NNMS 2017-18 hypertension care cascade, PMC10156594"

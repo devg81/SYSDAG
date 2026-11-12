@@ -85,7 +85,9 @@ def derive_encounters(
 
 
 def derive_timeline(
-    record_created_date: str, encounters: list[dict[str, Any]]
+    record_created_date: str,
+    encounters: list[dict[str, Any]],
+    diagnoses: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """The clinical timeline as an INDEX over already-generated dated
     records (M8) -- never a source of new dates.
@@ -120,6 +122,13 @@ def derive_timeline(
             "reference_id": enc["encounter_id"],
         }
         for enc in encounters
+    )
+    # v0.10: one condition_onset_modeled event per diagnosis with a MODELED
+    # onset_date (the event type name carries the "modeled" tag).
+    timeline.extend(
+        {"event_type": "condition_onset_modeled", "date": dx["onset_date"], "reference_id": dx["diagnosis_id"]}
+        for dx in sorted(diagnoses or [], key=lambda d: d.get("onset_date") or "")
+        if dx.get("onset_date")
     )
     return timeline
 

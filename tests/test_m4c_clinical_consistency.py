@@ -80,13 +80,21 @@ def test_missing_raw_lipid_values_handled():
     assert not any("does not match recomputation" in e for e in result.errors)
 
 
-# Test 4 — diabetes/HbA1c inconsistency is detected
-def test_diabetic_patient_with_hba1c_is_detected():
+# Test 4 — v0.10: a diabetic patient MISSING HbA1c is detected, and a
+# non-diabetic HbA1c above the NGT range is rejected.
+def test_diabetic_patient_missing_hba1c_is_detected():
     patient = _patient_with_sex(1, target_diabetes=True)
-    patient.labs = [Lab(analyte="HbA1c", unit="%", value=5.0, measured_at="2026-09-26")]
+    patient.labs = []
     result = validate_clinical_consistency(patient, INDIAN_CONFIG)
     assert not result.valid
-    assert any("diabetic patient" in e for e in result.errors)
+    assert any("missing the expected HbA1c" in e for e in result.errors)
+
+
+def test_non_diabetic_hba1c_in_diabetic_range_is_detected():
+    patient = _patient_with_sex(1, target_diabetes=False)
+    patient.labs[0].value = 8.5
+    result = validate_clinical_consistency(patient, INDIAN_CONFIG)
+    assert not result.valid
 
 
 def test_non_diabetic_patient_missing_hba1c_is_detected():
@@ -143,7 +151,11 @@ def test_encounters_are_now_generated_and_indexed_by_the_timeline():
     assert encounter.encounter_type == "synthetic_baseline_assessment"
     assert encounter.patient_id == patient.patient_id
     assert encounter.recorded_measurements  # never an empty container
-    referenced = {e.reference_id for e in patient.clinical_timeline if e.reference_id}
+    referenced = {
+        e.reference_id
+        for e in patient.clinical_timeline
+        if e.reference_id and e.event_type != "condition_onset_modeled"
+    }
     assert referenced == {encounter.encounter_id}
     result = validate_clinical_consistency(patient, INDIAN_CONFIG)
     assert result.valid, result.errors
@@ -184,10 +196,8 @@ def test_missingness_rules_correct_across_population():
     patients = [build_patient(seq, BASE_CONFIG) for seq in range(1, 21)]
     for p in patients:
         assert p.lipid_panel is not None  # always populated
-        if p.risk_factors.diabetes:
-            assert p.labs is None
-        else:
-            assert p.labs is not None and p.labs[0].analyte == "HbA1c"
+        # v0.10: HbA1c for everyone; [] / None are never produced for labs.
+        assert p.labs is not None and p.labs[0].analyte == "HbA1c"
 
 
 # Test 12 — D014/Option B: risk_factors.hyperlipidemia and

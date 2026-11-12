@@ -1,0 +1,832 @@
+{
+  "seeds": {
+    "PAT_000001 (seed 43)": {
+      "v0.9": {
+        "age": 65.00864912636283,
+        "sex": 0,
+        "htn/dm/hld": [
+          true,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          307.0,
+          77.8,
+          20.1,
+          271.3
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "154/97 (PP 57)",
+        "BP extrapolated/conf": [
+          true,
+          null
+        ],
+        "HbA1c": 4.97,
+        "onset ages": {
+          "hypertension": null
+        },
+        "meds": []
+      },
+      "v0.10": {
+        "age": 65.01,
+        "sex": 0,
+        "htn/dm/hld": [
+          true,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          197.7,
+          154.7,
+          34.5,
+          132.3
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "141/85 (PP 56)",
+        "BP extrapolated/conf": [
+          true,
+          "low"
+        ],
+        "HbA1c": 5.25,
+        "onset ages": {
+          "hypertension": 25.8
+        },
+        "meds": []
+      }
+    },
+    "PAT_000011 (seed 53)": {
+      "v0.9": {
+        "age": 20.76776262493437,
+        "sex": 1,
+        "htn/dm/hld": [
+          false,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          130.1,
+          112.9,
+          43.3,
+          64.2
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "116/76 (PP 40)",
+        "BP extrapolated/conf": [
+          false,
+          null
+        ],
+        "HbA1c": 5.3,
+        "onset ages": {},
+        "meds": []
+      },
+      "v0.10": {
+        "age": 20.77,
+        "sex": 1,
+        "htn/dm/hld": [
+          false,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          164.0,
+          82.0,
+          47.0,
+          100.6
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "113/75 (PP 38)",
+        "BP extrapolated/conf": [
+          false,
+          "moderate"
+        ],
+        "HbA1c": 4.96,
+        "onset ages": {},
+        "meds": []
+      }
+    },
+    "PAT_000013 (seed 55)": {
+      "v0.9": {
+        "age": 77.4254006583916,
+        "sex": 1,
+        "htn/dm/hld": [
+          false,
+          true,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          160.1,
+          84.0,
+          49.0,
+          94.3
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "119/84 (PP 35)",
+        "BP extrapolated/conf": [
+          true,
+          null
+        ],
+        "HbA1c": "labs=null",
+        "onset ages": {
+          "diabetes": null
+        },
+        "meds": []
+      },
+      "v0.10": {
+        "age": 77.43,
+        "sex": 1,
+        "htn/dm/hld": [
+          false,
+          true,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          161.8,
+          123.2,
+          40.9,
+          96.3
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "125/77 (PP 48)",
+        "BP extrapolated/conf": [
+          true,
+          "low"
+        ],
+        "HbA1c": 10.41,
+        "onset ages": {
+          "diabetes": 50.1
+        },
+        "meds": [
+          "antidiabetic"
+        ]
+      }
+    },
+    "PAT_000015 (seed 57)": {
+      "v0.9": {
+        "age": 67.20750251773238,
+        "sex": 0,
+        "htn/dm/hld": [
+          false,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          148.2,
+          390.3,
+          32.8,
+          37.3
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "113/62 (PP 51)",
+        "BP extrapolated/conf": [
+          true,
+          null
+        ],
+        "HbA1c": 6.35,
+        "onset ages": {},
+        "meds": []
+      },
+      "v0.10": {
+        "age": 67.21,
+        "sex": 0,
+        "htn/dm/hld": [
+          false,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          221.9,
+          274.9,
+          31.0,
+          135.9
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "138/77 (PP 61)",
+        "BP extrapolated/conf": [
+          true,
+          "low"
+        ],
+        "HbA1c": 4.7,
+        "onset ages": {},
+        "meds": []
+      }
+    },
+    "PAT_000095 (seed 137)": {
+      "v0.9": {
+        "age": 79.21456155806976,
+        "sex": 0,
+        "htn/dm/hld": [
+          true,
+          true,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          296.1,
+          277.5,
+          29.3,
+          211.3
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "184/118 (PP 66)",
+        "BP extrapolated/conf": [
+          true,
+          null
+        ],
+        "HbA1c": "labs=null",
+        "onset ages": {
+          "hypertension": null,
+          "diabetes": null
+        },
+        "meds": [
+          "antidiabetic"
+        ]
+      },
+      "v0.10": {
+        "age": 79.21,
+        "sex": 0,
+        "htn/dm/hld": [
+          true,
+          true,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          143.2,
+          70.4,
+          45.8,
+          83.3
+        ],
+        "NCEP/LAI dyslip": [
+          false,
+          false
+        ],
+        "BP": "141/86 (PP 55)",
+        "BP extrapolated/conf": [
+          true,
+          "low"
+        ],
+        "HbA1c": 9.58,
+        "onset ages": {
+          "hypertension": 26.3,
+          "diabetes": 67.9
+        },
+        "meds": []
+      }
+    },
+    "PAT_019321 (seed 19363)": {
+      "v0.9": {
+        "age": 83.99394689532562,
+        "sex": 0,
+        "htn/dm/hld": [
+          false,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          148.0,
+          339.6,
+          75.2,
+          30.0
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "115/75 (PP 40)",
+        "BP extrapolated/conf": [
+          true,
+          null
+        ],
+        "HbA1c": 6.31,
+        "onset ages": {},
+        "meds": []
+      },
+      "v0.10": {
+        "age": 83.99,
+        "sex": 0,
+        "htn/dm/hld": [
+          false,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          230.8,
+          339.0,
+          43.9,
+          119.1
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "137/81 (PP 56)",
+        "BP extrapolated/conf": [
+          true,
+          "low"
+        ],
+        "HbA1c": 5.56,
+        "onset ages": {},
+        "meds": []
+      }
+    },
+    "PAT_033933 (seed 33975)": {
+      "v0.9": {
+        "age": 77.5539848601273,
+        "sex": 1,
+        "htn/dm/hld": [
+          true,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          145.0,
+          308.0,
+          78.6,
+          30.0
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "133/99 (PP 34)",
+        "BP extrapolated/conf": [
+          true,
+          null
+        ],
+        "HbA1c": 5.42,
+        "onset ages": {
+          "hypertension": null
+        },
+        "meds": []
+      },
+      "v0.10": {
+        "age": 77.55,
+        "sex": 1,
+        "htn/dm/hld": [
+          true,
+          false,
+          true
+        ],
+        "TC/TG/HDL/LDL": [
+          220.4,
+          115.4,
+          52.9,
+          144.4
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "158/83 (PP 75)",
+        "BP extrapolated/conf": [
+          true,
+          "low"
+        ],
+        "HbA1c": 5.61,
+        "onset ages": {
+          "hypertension": 30.3
+        },
+        "meds": []
+      }
+    },
+    "PAT_078682 (seed 78724)": {
+      "v0.9": {
+        "age": 65.2833191593188,
+        "sex": 1,
+        "htn/dm/hld": [
+          true,
+          false,
+          false
+        ],
+        "TC/TG/HDL/LDL": [
+          184.9,
+          127.4,
+          60.4,
+          99.0
+        ],
+        "NCEP/LAI dyslip": [
+          false,
+          false
+        ],
+        "BP": "122/93 (PP 29)",
+        "BP extrapolated/conf": [
+          true,
+          null
+        ],
+        "HbA1c": 6.24,
+        "onset ages": {
+          "hypertension": null
+        },
+        "meds": []
+      },
+      "v0.10": {
+        "age": 65.28,
+        "sex": 1,
+        "htn/dm/hld": [
+          true,
+          false,
+          false
+        ],
+        "TC/TG/HDL/LDL": [
+          98.0,
+          59.1,
+          49.9,
+          36.3
+        ],
+        "NCEP/LAI dyslip": [
+          true,
+          true
+        ],
+        "BP": "159/75 (PP 84)",
+        "BP extrapolated/conf": [
+          true,
+          "low"
+        ],
+        "HbA1c": 4.2,
+        "onset ages": {
+          "hypertension": 30.7
+        },
+        "meds": []
+      }
+    }
+  },
+  "cohort_v0.9": {
+    "n": 5000,
+    "lipid_correlations": {
+      "r(lnTG, HDL)": -0.034,
+      "r(TG, HDL)": -0.046,
+      "r(TC, LDL)": 0.913,
+      "r(TC, lnTG)": 0.035
+    },
+    "ldl_floor": {
+      "pct_LDL_exactly_30.0": 7.26,
+      "most_common_LDL_value": 30.0,
+      "pct_at_most_common_value": 7.26,
+      "pct_LDL_not_equal_friedewald": 7.18,
+      "pct_LDL_below_0": 0.0,
+      "pct_TG_above_400": 0.0
+    },
+    "prevalence_pct_vs_source": {
+      "hypertension (INDIAB-17 35.5)": 35.42,
+      "diabetes (INDIAB-17 11.4)": 12.14,
+      "hyperlipidemia flag (INDIAB-17 81.2)": 80.86,
+      "NCEP dyslipidaemia from panel (INDIAB-17 81.2)": 83.34,
+      "LAI dyslipidaemia from panel": 85.72,
+      "TC>=200 (INDIAB-17 24.0)": 24.42,
+      "TG>=150 (INDIAB-17 32.1)": 30.04,
+      "low HDL (INDIAB-17 66.9)": 68.4,
+      "LDL>=130 (INDIAB-17 20.9)": 27.82,
+      "antihypertensive | htn (NNMS 14.5)": 15.75,
+      "antidiabetic | dm (NNMS 36.1)": 36.08,
+      "HbA1c<7 | treated dm (INDIAB-13 36.3)": 0.0,
+      "hyperlipidemia flag agrees with NCEP interpretation": 70.44
+    },
+    "bp_by_age_band": {
+      "M 20-29": {
+        "n": 358,
+        "SBP": 124.1,
+        "DBP": 81.0,
+        "PP": 43.1,
+        "SBP_normotensive_only": 117.9
+      },
+      "M 30-39": {
+        "n": 396,
+        "SBP": 125.0,
+        "DBP": 82.9,
+        "PP": 42.0,
+        "SBP_normotensive_only": 119.8
+      },
+      "M 40-49": {
+        "n": 369,
+        "SBP": 125.8,
+        "DBP": 82.7,
+        "PP": 43.1,
+        "SBP_normotensive_only": 120.1
+      },
+      "M 50-59": {
+        "n": 372,
+        "SBP": 127.7,
+        "DBP": 84.1,
+        "PP": 43.7,
+        "SBP_normotensive_only": 120.0
+      },
+      "M 60-69": {
+        "n": 387,
+        "SBP": 127.6,
+        "DBP": 83.7,
+        "PP": 43.9,
+        "SBP_normotensive_only": 121.0
+      },
+      "M 70-79": {
+        "n": 356,
+        "SBP": 127.7,
+        "DBP": 83.4,
+        "PP": 44.3,
+        "SBP_normotensive_only": 119.9
+      },
+      "M 80-89": {
+        "n": 326,
+        "SBP": 127.4,
+        "DBP": 83.4,
+        "PP": 44.0,
+        "SBP_normotensive_only": 119.3
+      },
+      "F 20-29": {
+        "n": 353,
+        "SBP": 117.3,
+        "DBP": 79.9,
+        "PP": 37.4,
+        "SBP_normotensive_only": 111.7
+      },
+      "F 30-39": {
+        "n": 350,
+        "SBP": 120.0,
+        "DBP": 81.5,
+        "PP": 38.5,
+        "SBP_normotensive_only": 113.6
+      },
+      "F 40-49": {
+        "n": 351,
+        "SBP": 125.2,
+        "DBP": 82.4,
+        "PP": 42.8,
+        "SBP_normotensive_only": 118.0
+      },
+      "F 50-59": {
+        "n": 368,
+        "SBP": 125.6,
+        "DBP": 82.0,
+        "PP": 43.6,
+        "SBP_normotensive_only": 117.3
+      },
+      "F 60-69": {
+        "n": 367,
+        "SBP": 125.0,
+        "DBP": 82.2,
+        "PP": 42.9,
+        "SBP_normotensive_only": 117.2
+      },
+      "F 70-79": {
+        "n": 355,
+        "SBP": 124.9,
+        "DBP": 81.9,
+        "PP": 43.0,
+        "SBP_normotensive_only": 119.1
+      },
+      "F 80-89": {
+        "n": 292,
+        "SBP": 127.8,
+        "DBP": 83.7,
+        "PP": 44.2,
+        "SBP_normotensive_only": 120.0
+      }
+    }
+  },
+  "cohort_v0.10": {
+    "n": 5000,
+    "lipid_correlations": {
+      "r(lnTG, HDL)": -0.355,
+      "r(TG, HDL)": -0.334,
+      "r(TC, LDL)": 0.942,
+      "r(TC, lnTG)": 0.447
+    },
+    "ldl_floor": {
+      "pct_LDL_exactly_30.0": 0.0,
+      "most_common_LDL_value": 110.4,
+      "pct_at_most_common_value": 0.26,
+      "pct_LDL_not_equal_friedewald": 0.0,
+      "pct_LDL_below_0": 0.0,
+      "pct_TG_above_400": 0.0
+    },
+    "prevalence_pct_vs_source": {
+      "hypertension (INDIAB-17 35.5)": 35.42,
+      "diabetes (INDIAB-17 11.4)": 12.14,
+      "hyperlipidemia flag (INDIAB-17 81.2)": 80.86,
+      "NCEP dyslipidaemia from panel (INDIAB-17 81.2)": 80.86,
+      "LAI dyslipidaemia from panel": 89.96,
+      "TC>=200 (INDIAB-17 24.0)": 25.06,
+      "TG>=150 (INDIAB-17 32.1)": 31.34,
+      "low HDL (INDIAB-17 66.9)": 65.16,
+      "LDL>=130 (INDIAB-17 20.9)": 22.78,
+      "antihypertensive | htn (NNMS 14.5)": 14.12,
+      "antidiabetic | dm (NNMS 36.1)": 36.57,
+      "HbA1c<7 | treated dm (INDIAB-13 36.3)": 34.68,
+      "hyperlipidemia flag agrees with NCEP interpretation": 69.04
+    },
+    "bp_by_age_band": {
+      "M 20-29": {
+        "n": 358,
+        "SBP": 124.6,
+        "DBP": 81.8,
+        "PP": 42.8,
+        "SBP_normotensive_only": 118.6
+      },
+      "M 30-39": {
+        "n": 396,
+        "SBP": 125.1,
+        "DBP": 83.5,
+        "PP": 41.7,
+        "SBP_normotensive_only": 120.4
+      },
+      "M 40-49": {
+        "n": 369,
+        "SBP": 124.9,
+        "DBP": 83.2,
+        "PP": 41.7,
+        "SBP_normotensive_only": 119.4
+      },
+      "M 50-59": {
+        "n": 372,
+        "SBP": 127.1,
+        "DBP": 83.6,
+        "PP": 43.5,
+        "SBP_normotensive_only": 119.5
+      },
+      "M 60-69": {
+        "n": 387,
+        "SBP": 130.4,
+        "DBP": 82.8,
+        "PP": 47.6,
+        "SBP_normotensive_only": 122.5
+      },
+      "M 70-79": {
+        "n": 356,
+        "SBP": 132.0,
+        "DBP": 82.5,
+        "PP": 49.5,
+        "SBP_normotensive_only": 123.6
+      },
+      "M 80-89": {
+        "n": 326,
+        "SBP": 133.7,
+        "DBP": 81.3,
+        "PP": 52.3,
+        "SBP_normotensive_only": 125.3
+      },
+      "F 20-29": {
+        "n": 352,
+        "SBP": 116.7,
+        "DBP": 80.3,
+        "PP": 36.5,
+        "SBP_normotensive_only": 111.2
+      },
+      "F 30-39": {
+        "n": 351,
+        "SBP": 120.3,
+        "DBP": 81.2,
+        "PP": 39.1,
+        "SBP_normotensive_only": 115.0
+      },
+      "F 40-49": {
+        "n": 351,
+        "SBP": 124.5,
+        "DBP": 82.6,
+        "PP": 41.9,
+        "SBP_normotensive_only": 116.6
+      },
+      "F 50-59": {
+        "n": 367,
+        "SBP": 128.3,
+        "DBP": 81.2,
+        "PP": 47.0,
+        "SBP_normotensive_only": 120.1
+      },
+      "F 60-69": {
+        "n": 368,
+        "SBP": 132.1,
+        "DBP": 80.1,
+        "PP": 52.0,
+        "SBP_normotensive_only": 124.5
+      },
+      "F 70-79": {
+        "n": 355,
+        "SBP": 134.8,
+        "DBP": 78.6,
+        "PP": 56.2,
+        "SBP_normotensive_only": 126.9
+      },
+      "F 80-89": {
+        "n": 292,
+        "SBP": 139.8,
+        "DBP": 77.8,
+        "PP": 62.0,
+        "SBP_normotensive_only": 128.1
+      }
+    }
+  },
+  "null_empty_pct_v0.10": {
+    "patient_id": {
+      "null_pct": 0.0,
+      "empty_list_pct": 0.0
+    },
+    "demographics.age": 0.0,
+    "demographics.sex": 0.0,
+    "demographics.height_cm": 100.0,
+    "demographics.weight_kg": 100.0,
+    "demographics.state": 0.0,
+    "demographics.urban_rural": 0.0,
+    "provenance": {
+      "null_pct": 0.0,
+      "empty_list_pct": 0.0
+    },
+    "risk_factors.bmi": 0.0,
+    "risk_factors.smoking_status": 0.0,
+    "risk_factors.hypertension": 0.0,
+    "risk_factors.diabetes": 0.0,
+    "risk_factors.hyperlipidemia": 0.0,
+    "family_history.diabetes": 0.0,
+    "family_history.cardiovascular_disease": 0.0,
+    "family_history.derivation": 0.0,
+    "medical_history": {
+      "null_pct": 0.0,
+      "empty_list_pct": 56.5
+    },
+    "diagnoses": {
+      "null_pct": 0.0,
+      "empty_list_pct": 56.5
+    },
+    "medications": {
+      "null_pct": 0.0,
+      "empty_list_pct": 90.7
+    },
+    "labs": {
+      "null_pct": 0.0,
+      "empty_list_pct": 0.0
+    },
+    "blood_pressure.systolic_mm_hg": 0.0,
+    "blood_pressure.diastolic_mm_hg": 0.0,
+    "blood_pressure.measured_at": 0.0,
+    "blood_pressure.age_band_source": 0.0,
+    "blood_pressure.extrapolated_beyond_source_age_range": 0.0,
+    "blood_pressure.source": 0.0,
+    "blood_pressure.confidence": 0.0,
+    "air_quality.aqi": 3.02,
+    "air_quality.category": 3.02,
+    "air_quality.reference_year": 0.0,
+    "air_quality.stations": 3.02,
+    "air_quality.cities": 3.02,
+    "air_quality.unavailable_reason": 96.98,
+    "air_quality.geographic_resolution": 0.0,
+    "air_quality.monitoring_bias": 0.0,
+    "air_quality.source": 0.0,
+    "encounters": {
+      "null_pct": 0.0,
+      "empty_list_pct": 0.0
+    },
+    "lipid_panel.ldl_mg_dl": 0.0,
+    "lipid_panel.hdl_mg_dl": 0.0,
+    "lipid_panel.triglycerides_mg_dl": 0.0,
+    "lipid_panel.total_cholesterol_mg_dl": 0.0,
+    "lipid_interpretations": {
+      "null_pct": 0.0,
+      "empty_list_pct": 0.0
+    },
+    "ecg.source": 0.0,
+    "ecg.ecg_id": 0.0,
+    "ecg.superclasses": 0.0,
+    "ecg.strat_fold": 0.0,
+    "ecg.sampling_hz": 0.0,
+    "ecg.signal_shape": 0.0,
+    "ecg.filename": 0.0,
+    "ecg.signal_available": 0.0,
+    "echo": {
+      "null_pct": 100.0,
+      "empty_list_pct": 0.0
+    },
+    "clinical_timeline": {
+      "null_pct": 0.0,
+      "empty_list_pct": 0.0
+    },
+    "validation": {
+      "null_pct": 0.0,
+      "empty_list_pct": 0.0
+    },
+    "diagnoses[].diagnosed_date": 100.0,
+    "diagnoses[].onset_date": 0.0
+  }
+}

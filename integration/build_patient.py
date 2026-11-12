@@ -141,14 +141,31 @@ def build_patient(
         for interp in attrs["lipid_interpretations"]
     ]
     measured_date = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
-    labs = None
-    if attrs["hba1c"] is not None:
-        labs = [Lab(analyte="HbA1c", unit="%", value=attrs["hba1c"], measured_at=measured_date)]
+    h = attrs["hba1c"]
+    labs = [
+        Lab(
+            analyte="HbA1c",
+            unit="%",
+            value=h["value"],
+            measured_at=measured_date,
+            derivation=h["derivation"],
+            confidence=h["confidence"],
+        )
+    ]
 
     # M4D — docs/DECISIONS.md D015: diagnoses are a 1:1 promotion of
     # already-generated risk_factors flags; medical_history REFERENCES
     # those diagnoses rather than re-deriving them.
     diag_dicts = derive_diagnoses(attrs["risk_factors"], patient_id)
+    # v0.10: attach the MODELED onset (issue 4); diagnosed_date stays None.
+    assessment = datetime.date.fromisoformat(measured_date)
+    for dx in diag_dicts:
+        onset = attrs["onset"].get(dx["code"])
+        if onset is None:
+            continue
+        years_before = attrs["demographics"]["age"] - onset["age_at_onset_years"]
+        dx.update(onset)
+        dx["onset_date"] = (assessment - datetime.timedelta(days=round(years_before * 365.2425))).isoformat()
     diagnoses = [Diagnosis(**dx) for dx in diag_dicts]
     medical_history = [
         MedicalHistoryEntry(**entry) for entry in derive_medical_history(diag_dicts)
@@ -175,6 +192,7 @@ def build_patient(
         extrapolated_beyond_source_age_range=bp_values[
             "extrapolated_beyond_source_age_range"
         ],
+        confidence=bp_values["confidence"],
     )
 
     # M8 — one structural container for the single synthetic measurement
@@ -213,16 +231,26 @@ def build_patient(
             "Census-2011-derived national marginal; height_cm/weight_kg "
             "not modeled (out of M2C scope); ECG is metadata-only, no "
             "waveform attached (D003); lipid_panel "
-            "TC/TG/HDL sampled (category-then-uniform, INDIAB-17), LDL "
-            "DERIVED via Friedewald (never independently sampled, D011); "
+            "TC/ln(TG)/HDL sampled JOINTLY (v0.10, D022: trivariate normal, "
+            "means solved from INDIAB-17 category rates, SDs from ICMR-INDIAB "
+            "phase I PMC4016101, latent correlations calibrated to INDIAB-17 "
+            "dyslipidaemia/LDL>=130 -- no Indian correlation coefficient "
+            "exists), LDL DERIVED via Friedewald (never independently "
+            "sampled, never clamped: infeasible panels and TG>400 are "
+            "rejected and redrawn whole, D011/D022); "
             "lipid_interpretations COMPUTED per definition, never sampled "
-            "(D011); labs.HbA1c generated only for non-diabetic patients, "
-            "age+sex-conditioned (ICMR-INDIAB-12), conditional on the "
-            "diabetes label above, never the reverse (M4-0B) — see "
-            "docs/M4B_GENERATION_DESIGN.md; diagnoses are a 1:1 promotion "
+            "(D011); labs.HbA1c for EVERY patient, conditional on the "
+            "diabetes label, never the reverse: non-diabetic from "
+            "ICMR-INDIAB-12 age+sex trend; diabetic (v0.10) log-normal "
+            "fitted to ICMR-INDIAB-13 (36.3% HbA1c<7%) with SD 2.2 -- "
+            "observed for treated, BORROWED (confidence low) for untreated; "
+            "tagged per lab via derivation/confidence; diagnoses are a 1:1 promotion "
             "of the hypertension/diabetes risk_factors flags, never "
-            "independently sampled, diagnosed_date left null (no "
-            "evidence-backed per-patient onset distribution exists); "
+            "independently sampled, diagnosed_date left null (diagnosis "
+            "timing not modeled); age_at_onset_years/onset_date MODELED "
+            "(v0.10) by inverse-CDF on prevalence-by-age curves (NFHS-5 BP "
+            "model for hypertension, LASI for diabetes), always <= age, "
+            "confidence low -- see configs/indian_population.yaml onset_model; "
             "hyperlipidemia diagnosis deliberately deferred (D015); "
             "medical_history chronic_condition entries reference those "
             "diagnoses, not re-derived — see "
@@ -247,18 +275,20 @@ def build_patient(
             "already-primary label and NEVER used to re-derive it — a "
             "treated hypertensive's BP is left UNCONSTRAINED rather "
             "than forced high; ages above source coverage (men>54, "
-            "women>49) hold the oldest band constant, flagged per "
-            "record via blood_pressure.extrapolated_beyond_source_"
-            "age_range; SBP/DBP correlation not modeled (no Indian "
-            "source) — see configs/indian_population.yaml "
+            "women>49): mean SBP extrapolated along NFHS-5's own linear "
+            "age trend, DBP and SDs held at the oldest band (v0.10), "
+            "flagged per record via blood_pressure.extrapolated_beyond_"
+            "source_age_range and confidence=low; SBP/DBP correlation "
+            "r=0.7255 DERIVED from published Indian variances — see configs/indian_population.yaml "
             "risk_factors.blood_pressure for all limitations; "
             "encounters contain ONE synthetic_baseline_assessment, a "
             "structural container for this record's single measurement "
             "cross-section — NOT an observed healthcare contact, no "
             "visit/admission/follow-up is generated (no Indian "
             "utilization evidence); clinical_timeline indexes that "
-            "encounter by reference_id and emits no diagnosis-onset, "
-            "medication-start or follow-up event; height_cm/weight_kg "
+            "encounter by reference_id and emits a condition_onset_modeled event per "
+            "modeled onset (v0.10), and no medication-start or follow-up "
+            "event; height_cm/weight_kg "
             "STILL null — no national mean+SD of Indian adult height "
             "by sex located in 6 research attempts (M4-0 x3, M8 x3), "
             "so BMI remains the evidence-primary anthropometric and "
@@ -290,6 +320,8 @@ def build_patient(
             "ICMR-INDIAB-17 (2023)",
             "ICMR-INDIAB-25 (2026)",
             "ICMR-INDIAB-12 (2022)",
+            "ICMR-INDIAB-13 (2022, diabetic HbA1c control share)",
+            "ICMR-INDIAB phase I lipids (PMC4016101) and glycaemic control (PMC4135327)",
             "NFHS-5 2019-21 (blood pressure, via PLOS ONE 2025 doi:10.1371/journal.pone.0332226)",
             "LASI Wave 1 2017-18 (family history; PMC11005278, PMC11659756, LASI India Report 2020 Tables 7.3/7.5)",
             "CPCB CAAQMS hourly AQI 2023 via github.com/Vonter/india-cpcb-aqi @954db3a (ODbL-1.0)",
@@ -298,7 +330,7 @@ def build_patient(
 
     timeline = [
         TimelineEvent(**event)
-        for event in derive_timeline(generated_at[:10], encounter_dicts)
+        for event in derive_timeline(generated_at[:10], encounter_dicts, diag_dicts)
     ]
 
     patient = Patient(

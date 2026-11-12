@@ -115,16 +115,20 @@ def test_multiple_definitions_consistent_with_their_own_thresholds():
 def test_hba1c_generated_within_range_for_non_diabetic():
     rng = np.random.default_rng(55)
     for _ in range(20):
-        value = sample_hba1c(rng, INDIAN_CONFIG, age=50.0, sex=0, diabetes=False)
-        assert value is not None
-        assert 4.0 <= value <= 6.4
+        h = sample_hba1c(rng, INDIAN_CONFIG, age=50.0, sex=0, diabetes=False)
+        assert 4.0 <= h["value"] <= 6.4
+        assert h["derivation"] == "observed_distribution_indiab12_ngt"
 
 
-# Test 8 — diabetes -> HbA1c dependency respected (never generated for diabetics)
-def test_hba1c_not_generated_for_diabetic():
+# Test 8 — v0.10 (D022): diabetics now get HbA1c from the diabetic
+# distribution, tagged by treatment status (still conditional on the label).
+def test_hba1c_for_diabetic_is_tagged_by_treatment():
     rng = np.random.default_rng(55)
-    for _ in range(10):
-        assert sample_hba1c(rng, INDIAN_CONFIG, age=50.0, sex=0, diabetes=True) is None
+    treated = sample_hba1c(rng, INDIAN_CONFIG, age=50.0, sex=0, diabetes=True, on_antidiabetic=True)
+    untreated = sample_hba1c(rng, INDIAN_CONFIG, age=50.0, sex=0, diabetes=True, on_antidiabetic=False)
+    assert 4.0 <= treated["value"] <= 18.0 and 4.0 <= untreated["value"] <= 18.0
+    assert treated["confidence"] == "moderate" and untreated["confidence"] == "low"
+    assert untreated["derivation"].startswith("borrowed")
 
 
 # Test 9 — existing patient fields (demographics/risk_factors/ECG) remain
@@ -133,7 +137,7 @@ def test_hba1c_not_generated_for_diabetic():
 def test_existing_fields_unchanged_for_reference_patient():
     patient = build_patient(1, BASE_CONFIG)
     assert patient.patient_id == "PAT_000001"
-    assert patient.demographics.age == 65.00864912636283
+    assert patient.demographics.age == 65.01  # v0.10: rounded to 2 dp, same draw
     assert patient.demographics.state == "Uttar Pradesh"
     assert patient.demographics.urban_rural == "urban"
     assert patient.risk_factors.bmi == 18.0
@@ -161,7 +165,7 @@ def test_missingness_matches_design():
 
     if diabetic_patient is not None:
         assert diabetic_patient.lipid_panel is not None  # always populated regardless of diabetes
-        assert diabetic_patient.labs is None  # HbA1c withheld for diabetics
+        assert diabetic_patient.labs[0].analyte == "HbA1c"  # v0.10: everyone has HbA1c
 
 
 # Test 11 — serialization of a real generated patient remains valid

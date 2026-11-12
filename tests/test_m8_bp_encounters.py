@@ -56,8 +56,8 @@ def _bp(seed: int, age: float, sex: int, hypertension: bool, treated: bool):
 # ------------------------------------------------------------------ schema
 
 
-def test_schema_version_is_09():
-    assert SCHEMA_VERSION == "0.9"
+def test_schema_version_is_010():
+    assert SCHEMA_VERSION == "0.10"
 
 
 def test_config_validates():
@@ -184,14 +184,18 @@ def test_extrapolation_flag_matches_source_coverage():
         assert extrapolated is False
         _, label, extrapolated = _bp_band(INDIAN_CONFIG, limit + 1.0, sex)
         assert extrapolated is True
-        # Beyond coverage, the OLDEST band is held constant -- never a
-        # projected continuation of the trend.
+        # v0.10: beyond coverage the oldest band's DBP/SDs are kept and
+        # mean SBP follows the fitted NFHS-5 trend, so it RISES with age
+        # while mean DBP stays flat (pulse pressure widens).
         last = INDIAN_CONFIG["risk_factors"]["blood_pressure"]["distribution"][
             "age_bands_by_sex"
         ][key][-1]
-        assert label == f"NFHS-5 {key} {int(last[0])}-{int(last[1])}"
-        _, label_89, _ = _bp_band(INDIAN_CONFIG, 89.0, sex)
-        assert label_89 == label
+        band_edge, _, _ = _bp_band(INDIAN_CONFIG, limit + 1.0, sex)
+        band_89, label_89, _ = _bp_band(INDIAN_CONFIG, 89.0, sex)
+        assert label.startswith(f"NFHS-5 {key} {int(last[0])}-{int(last[1])}") and "extrapolated" in label
+        assert band_89[2] > band_edge[2] > last[2] - 1.0
+        assert band_89[4] == band_edge[4] == last[4]
+        assert band_89[3] == last[3] and band_89[5] == last[5]
 
 
 # ------------------------------------------------- determinism / no drift
@@ -215,11 +219,10 @@ def test_different_seeds_give_varied_blood_pressure():
     "patient_id", ["PAT_000001", "PAT_000007", "PAT_033333", "PAT_099999"]
 )
 def test_adding_blood_pressure_did_not_perturb_any_pre_existing_field(patient_id):
-    """BP is drawn LAST in the generator's order, so every field
-    generated before it must come off the same seed byte-identically to
-    what the v0.7 dataset already stores. This is what lets the
-    migration replay-and-extend instead of regenerating, and it is the
-    single most important backward-compatibility property in M8.
+    """Every field drawn BEFORE the lipid panel must come off the same seed
+    identically to the stored v0.8 dataset (age now rounded to 2 dp).
+    v0.10 (D022) deliberately changed lipids/HbA1c, so those are no longer
+    compared -- see tests/test_v010_review_fixes.py for their new contract.
     """
     path = PRODUCTION_DATASET / f"{patient_id}.json"
     if not path.exists():
@@ -228,17 +231,11 @@ def test_adding_blood_pressure_did_not_perturb_any_pre_existing_field(patient_id
     seed = int(re.search(r"indian_random_seed=(\d+)", stored["provenance"]["generator"]).group(1))
     attrs = generate_indian_attributes(np.random.default_rng(seed), INDIAN_CONFIG)
 
-    for key in ("age", "sex", "state", "urban_rural"):
+    assert attrs["demographics"]["age"] == round(stored["demographics"]["age"], 2)
+    for key in ("sex", "state", "urban_rural"):
         assert attrs["demographics"][key] == stored["demographics"][key], key
     for key, value in attrs["risk_factors"].items():
         assert value == stored["risk_factors"][key], key
-    for key, value in attrs["lipid_panel"].items():
-        assert value == stored["lipid_panel"][key], key
-    stored_hba1c = next(
-        (lab["value"] for lab in (stored["labs"] or []) if lab["analyte"] == "HbA1c"), None
-    )
-    assert attrs["hba1c"] == stored_hba1c
-    assert attrs["lipid_interpretations"] == stored["lipid_interpretations"]
 
 
 # ------------------------------------------------- anthropometrics deferral
