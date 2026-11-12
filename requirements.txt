@@ -1,0 +1,10 @@
+# Minimal dependencies for Stage 2 foundation (schema/ingestion/integration/
+# validation) and for reusing syngen's existing ECG code (docs/DECISIONS.md
+# D002). Torch is only required because syngen/gan_pytorch.py imports it at
+# module level; Stage 2 itself does not train or run any model.
+pandas>=2.2
+numpy>=1.26
+torch>=2.3
+wfdb>=4.3
+PyYAML>=6.0
+pytest>=7.4

@@ -1,0 +1,34 @@
+manifest -> outputs/m9/dataset_manifest.json
+{
+  "dataset_name": "sysdag_m9_100k_v09",
+  "dataset_version": "0.9.0",
+  "patient_count": 100000,
+  "schema_version": "0.9",
+  "source_dataset": "none -- generated fresh via integration/generate_population.py (seed = random_seed + sequence)",
+  "migration_entry_point": null,
+  "code_state": {
+    "git_head_commit": "4ce0e72ea27ecf224dc1008501c85b8c7f97ce9f",
+    "note": "this project does not commit per-milestone by standing convention (see docs/PROJECT_STATE.md); the schema/generation/validation code at the time of this freeze is the working tree, not necessarily this commit alone"
+  },
+  "validation_status": {
+    "structural": "PASS",
+    "structurally_valid_count": 100000,
+    "structurally_invalid_count": 0,
+    "unique_patient_ids": 100000,
+    "duplicate_patient_id_errors": 0
+  },
+  "clinical_validation_status": {
+    "status": "PASS",
+    "clinically_consistent_count": 100000,
+    "clinical_errors": 0,
+    "clinical_warnings": 14206,
+    "warnings_by_kind": {
+      "LDL clipped at floor (feasible but < 30)": 7740,
+      "ecg.superclasses empty (PTB-XL gap)": 6466
+    },
+    "checks_performed": [
+      "blood_pressure_hypertension_label_consistency",
+948M	outputs/m9/100k_patients_v09
+  "directory_checksum_sha256": "53fcae20983f2401823123754bbf1c5e53ec6c36a72126f8bdacd575d7308d1e",
+
+[exited with code 0]

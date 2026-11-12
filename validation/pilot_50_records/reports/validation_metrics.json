@@ -1,0 +1,555 @@
+{
+  "batch_size": 50,
+  "unique_patient_ids": 50,
+  "schema_versions": {
+    "0.8": 50
+  },
+  "age": {
+    "n": 50,
+    "mean": 59.84,
+    "sd": 20.68,
+    "min": 20.5,
+    "median": 63.52,
+    "max": 88.55
+  },
+  "sex": {
+    "male": 29,
+    "female": 21
+  },
+  "blood_pressure": {
+    "systolic_mm_hg": {
+      "n": 50,
+      "mean": 126.38,
+      "sd": 15.77,
+      "min": 95,
+      "median": 124.5,
+      "max": 160
+    },
+    "diastolic_mm_hg": {
+      "n": 50,
+      "mean": 84.24,
+      "sd": 11.29,
+      "min": 52,
+      "median": 83.0,
+      "max": 118
+    },
+    "pulse_pressure_mm_hg": {
+      "n": 50,
+      "mean": 42.14,
+      "sd": 10.85,
+      "min": 23,
+      "median": 41.5,
+      "max": 69
+    },
+    "sbp_gt_dbp_all": true,
+    "pulse_pressure_below_20": 0,
+    "raised_bp_count": 18,
+    "age_extrapolated_count": 32,
+    "distinct_values": {
+      "systolic": 38,
+      "diastolic": 30
+    }
+  },
+  "cohort_coverage": {
+    "hypertension_label_true": 19,
+    "on_antihypertensive": 3,
+    "treated_and_controlled": 1,
+    "diabetes_label_true": 4,
+    "diabetic_without_hba1c": 4,
+    "age_band_sources": {
+      "NFHS-5 female 45-49": 13,
+      "NFHS-5 male 50-54": 22,
+      "NFHS-5 male 20-24": 2,
+      "NFHS-5 female 30-34": 3,
+      "NFHS-5 male 45-49": 1,
+      "NFHS-5 male 25-29": 2,
+      "NFHS-5 female 25-29": 2,
+      "NFHS-5 male 35-39": 2,
+      "NFHS-5 female 40-44": 3
+    }
+  },
+  "missingness": {
+    "demographics.height_cm": 50,
+    "demographics.weight_kg": 50,
+    "family_history": 50,
+    "echo": 50,
+    "labs": 4,
+    "medications": 46,
+    "diagnoses": 29,
+    "blood_pressure": 0,
+    "encounters": 0
+  },
+  "encounters": {
+    "records_with_exactly_one": 50,
+    "types": {
+      "synthetic_baseline_assessment": 50
+    },
+    "recorded_measurement_sets": {
+      "blood_pressure,lipid_panel,labs.HbA1c": 46,
+      "blood_pressure,lipid_panel": 4
+    }
+  },
+  "clinical_timeline": {
+    "event_counts": {
+      "2": 50
+    },
+    "event_types": {
+      "synthetic_record_created": 50,
+      "synthetic_baseline_assessment": 50
+    }
+  },
+  "ecg": {
+    "signal_available_true": 0,
+    "missing_superclasses": 2
+  },
+  "validation": {
+    "validated_true": 50,
+    "total_errors": 0
+  },
+  "lipid_feasibility": {
+    "internally_impossible_tc_below_components": {
+      "count": 2,
+      "patient_ids": [
+        "PAT_044552",
+        "PAT_059083"
+      ]
+    },
+    "ldl_clipped_at_floor_but_feasible": {
+      "count": 2,
+      "patient_ids": [
+        "PAT_081367",
+        "PAT_081541"
+      ]
+    },
+    "triglycerides_above_friedewald_validity_400": {
+      "count": 0,
+      "patient_ids": []
+    },
+    "note": "Pre-existing M4B artefact, NOT introduced by M8. The stored LDL still follows its documented clip rule, so these are warnings rather than validation errors -- but see reports/validation_report.md: this is the pilot's headline unresolved issue for the full 100,000-record dataset."
+  },
+  "migration_run": {
+    "migrated_at": "2026-10-20T13:31:14.298072+00:00",
+    "source_schema_version": "0.7",
+    "target_schema_version": "0.8",
+    "records_in": 50,
+    "records_clean": 50,
+    "records_failed": 0,
+    "dry_run": false,
+    "written": 0
+  },
+  "per_record_notes": [
+    {
+      "patient_id": "PAT_001679",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_001679.json",
+      "errors": [],
+      "notes": [
+        "seed 1721 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_002735",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_002735.json",
+      "errors": [],
+      "notes": [
+        "seed 2777 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_003038",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_003038.json",
+      "errors": [],
+      "notes": [
+        "seed 3080 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_004014",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_004014.json",
+      "errors": [],
+      "notes": [
+        "seed 4056 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_004831",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_004831.json",
+      "errors": [],
+      "notes": [
+        "seed 4873 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_010692",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_010692.json",
+      "errors": [],
+      "notes": [
+        "seed 10734 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_014295",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_014295.json",
+      "errors": [],
+      "notes": [
+        "seed 14337 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_015020",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_015020.json",
+      "errors": [],
+      "notes": [
+        "seed 15062 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_017596",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_017596.json",
+      "errors": [],
+      "notes": [
+        "seed 17638 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_018469",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_018469.json",
+      "errors": [],
+      "notes": [
+        "seed 18511 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_019383",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_019383.json",
+      "errors": [],
+      "notes": [
+        "seed 19425 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_023440",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_023440.json",
+      "errors": [],
+      "notes": [
+        "seed 23482 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_024129",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_024129.json",
+      "errors": [],
+      "notes": [
+        "seed 24171 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_025588",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_025588.json",
+      "errors": [],
+      "notes": [
+        "seed 25630 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_025708",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_025708.json",
+      "errors": [],
+      "notes": [
+        "seed 25750 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_028462",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_028462.json",
+      "errors": [],
+      "notes": [
+        "seed 28504 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_031858",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_031858.json",
+      "errors": [],
+      "notes": [
+        "seed 31900 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_032682",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_032682.json",
+      "errors": [],
+      "notes": [
+        "seed 32724 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_037138",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_037138.json",
+      "errors": [],
+      "notes": [
+        "seed 37180 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_037263",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_037263.json",
+      "errors": [],
+      "notes": [
+        "seed 37305 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_037855",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_037855.json",
+      "errors": [],
+      "notes": [
+        "seed 37897 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_038851",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_038851.json",
+      "errors": [],
+      "notes": [
+        "seed 38893 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_039094",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_039094.json",
+      "errors": [],
+      "notes": [
+        "seed 39136 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_039772",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_039772.json",
+      "errors": [],
+      "notes": [
+        "seed 39814 replay reproduced all pre-existing generated fields exactly",
+        "clinical warning: ecg.superclasses is empty -- a missing PTB-XL label, not something to guess at (docs/M7_0_ECG_READINESS_REPORT.md)"
+      ]
+    },
+    {
+      "patient_id": "PAT_042291",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_042291.json",
+      "errors": [],
+      "notes": [
+        "seed 42333 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_043773",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_043773.json",
+      "errors": [],
+      "notes": [
+        "seed 43815 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_044552",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_044552.json",
+      "errors": [],
+      "notes": [
+        "seed 44594 replay reproduced all pre-existing generated fields exactly",
+        "clinical warning: lipid_panel is internally impossible: total cholesterol 129.8 < HDL 89.5 + triglycerides/5 (52.0), implying LDL -11.7; the stored LDL is the documented clip-range floor. Pre-existing M4B independent-marginal sampling artefact"
+      ]
+    },
+    {
+      "patient_id": "PAT_044984",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_044984.json",
+      "errors": [],
+      "notes": [
+        "seed 45026 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_047883",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_047883.json",
+      "errors": [],
+      "notes": [
+        "seed 47925 replay reproduced all pre-existing generated fields exactly",
+        "clinical warning: ecg.superclasses is empty -- a missing PTB-XL label, not something to guess at (docs/M7_0_ECG_READINESS_REPORT.md)"
+      ]
+    },
+    {
+      "patient_id": "PAT_053594",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_053594.json",
+      "errors": [],
+      "notes": [
+        "seed 53636 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_054249",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_054249.json",
+      "errors": [],
+      "notes": [
+        "seed 54291 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_057344",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_057344.json",
+      "errors": [],
+      "notes": [
+        "seed 57386 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_059083",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_059083.json",
+      "errors": [],
+      "notes": [
+        "seed 59125 replay reproduced all pre-existing generated fields exactly",
+        "clinical warning: lipid_panel is internally impossible: total cholesterol 127.0 < HDL 77.3 + triglycerides/5 (69.5), implying LDL -19.8; the stored LDL is the documented clip-range floor. Pre-existing M4B independent-marginal sampling artefact"
+      ]
+    },
+    {
+      "patient_id": "PAT_060420",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_060420.json",
+      "errors": [],
+      "notes": [
+        "seed 60462 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_063947",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_063947.json",
+      "errors": [],
+      "notes": [
+        "seed 63989 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_064236",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_064236.json",
+      "errors": [],
+      "notes": [
+        "seed 64278 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_064680",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_064680.json",
+      "errors": [],
+      "notes": [
+        "seed 64722 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_071920",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_071920.json",
+      "errors": [],
+      "notes": [
+        "seed 71962 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_078822",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_078822.json",
+      "errors": [],
+      "notes": [
+        "seed 78864 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_080442",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_080442.json",
+      "errors": [],
+      "notes": [
+        "seed 80484 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_081367",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_081367.json",
+      "errors": [],
+      "notes": [
+        "seed 81409 replay reproduced all pre-existing generated fields exactly",
+        "clinical warning: lipid_panel implies LDL 7.1 mg/dL, below the documented clip floor of 30.0, so the stored LDL was clipped rather than derived"
+      ]
+    },
+    {
+      "patient_id": "PAT_081541",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_081541.json",
+      "errors": [],
+      "notes": [
+        "seed 81583 replay reproduced all pre-existing generated fields exactly",
+        "clinical warning: lipid_panel implies LDL 25.0 mg/dL, below the documented clip floor of 30.0, so the stored LDL was clipped rather than derived"
+      ]
+    },
+    {
+      "patient_id": "PAT_084867",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_084867.json",
+      "errors": [],
+      "notes": [
+        "seed 84909 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_086955",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_086955.json",
+      "errors": [],
+      "notes": [
+        "seed 86997 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_087559",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_087559.json",
+      "errors": [],
+      "notes": [
+        "seed 87601 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_089327",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_089327.json",
+      "errors": [],
+      "notes": [
+        "seed 89369 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_089551",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_089551.json",
+      "errors": [],
+      "notes": [
+        "seed 89593 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_091129",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_091129.json",
+      "errors": [],
+      "notes": [
+        "seed 91171 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_095788",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_095788.json",
+      "errors": [],
+      "notes": [
+        "seed 95830 replay reproduced all pre-existing generated fields exactly"
+      ]
+    },
+    {
+      "patient_id": "PAT_098683",
+      "source_path": "D:\\Proj\\Sysdag_development\\outputs\\m5\\100k_patients\\PAT_098683.json",
+      "errors": [],
+      "notes": [
+        "seed 98725 replay reproduced all pre-existing generated fields exactly"
+      ]
+    }
+  ],
+  "clinical_warnings_by_kind": {
+    "ecg.superclasses is empty": 2,
+    "lipid_panel is internally impossible": 2,
+    "lipid_panel implies LDL 7.1 mg/dL, below the documented clip floor of 30.0, so the stored ": 1,
+    "lipid_panel implies LDL 25.0 mg/dL, below the documented clip floor of 30.0, so the stored": 1
+  },
+  "clinical_warning_total": 6
+}

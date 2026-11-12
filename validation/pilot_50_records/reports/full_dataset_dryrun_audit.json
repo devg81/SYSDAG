@@ -1,0 +1,23 @@
+{
+  "records": 100000,
+  "clean": 100000,
+  "failed": 0,
+  "elapsed_seconds": 68.3,
+  "ms_per_record": 0.683,
+  "projected_full_run_minutes": 1.14,
+  "records_in_schema_field_order": 100000,
+  "failures_sample": [],
+  "warnings_by_kind": {
+    "lipid LDL clipped at floor (feasible but < 30)": 7548,
+    "lipid internally impossible (TC < HDL + TG/5)": 2283,
+    "ecg.superclasses empty (PTB-XL gap, not guessed)": 6466
+  },
+  "bp_mean_sbp": 125.04,
+  "bp_mean_dbp": 82.53,
+  "bp_mean_pulse_pressure": 42.51,
+  "bp_min_pulse_pressure": 20,
+  "bp_sbp_gt_dbp_violations": 0,
+  "raised_bp_fraction": 0.3165,
+  "age_extrapolated_fraction": 0.5268,
+  "note": "Dry-run audit: migrate_record() over the complete 100,000-record v0.7 dataset. Nothing written to the source dataset."
+}

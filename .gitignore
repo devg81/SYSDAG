@@ -8,3 +8,35 @@ __pycache__/
 ~$*.pptx
 .DS_Store
 Thumbs.db
+.pytest_cache/
+
+# Generated pipeline outputs (CLAUDE.md §36: keep outputs separate from code,
+# do not commit generated datasets).
+outputs/
+
+# syngen/ code (.py, docs, ipynb) IS tracked — ingestion/ptbxl_source.py
+# imports it at runtime (docs/DECISIONS.md D002/D003). Only its large,
+# regeneratable/downloadable binary assets are excluded (CLAUDE.md §36).
+# NOTE: .gitignore has no inline-comment syntax — keep comments on their own
+# lines, not trailing a pattern (a trailing "# ..." becomes part of the glob).
+# full PTB-XL download (re-downloadable):
+syngen/**/dataset/
+# trained GAN weights, ~135MB each:
+syngen/**/checkpoints/
+# generated .npy arrays:
+syngen/**/synthetic_data/
+# generated eval plots/metrics:
+syngen/**/eval_*/
+syngen/**/real_*.npy
+syngen/**/*.npy
+syngen/**/*.docx
+syngen/**/*.pt
+
+# Secrets — never commit
+.env
+.env.*
+*.pem
+*.key
+credentials*.json
+# 4.9GB archive of legacy SynGen + PTB-XL (GitHub limit 100MB):
+syngen/SynGen.zip

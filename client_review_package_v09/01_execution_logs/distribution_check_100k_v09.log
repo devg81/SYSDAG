@@ -1,0 +1,16 @@
+n 100000 schema 0.9: 100000
+hypertension 35.40% vs 35.50% (z=-0.67)
+diabetes 11.46% vs 11.40% (z=+0.57)
+hyperlipidemia 81.23% vs 81.20% (z=+0.21)
+female 48.55% vs 48.53% (z=+0.10)
+urban 31.11% vs 31.16% (z=-0.32)
+FH diabetes 45+ 14.41% vs 14.33% (z=+0.55)
+FH CVD 45+ 11.62% vs 11.61% (z=+0.09)
+FH 20-44 diabetes 11.97%  CVD 8.37%  (CARRS urban caps 22.2 / 9.0)
+FH diabetes among diabetic 32.2% vs non-diabetic 11.1%
+derivation mismatches 0
+AQI null 3.37% vs 3.43% (z=-1.14) null without reason: 0
+lipid infeasible 0
+state chi2 48.1 on 34 df
+
+[exited with code 0]

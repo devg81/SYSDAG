@@ -1,0 +1,130 @@
+{
+  "source_dir": "D:\\Proj\\Sysdag_development\\outputs\\m8\\100k_patients_v08",
+  "load_errors": [],
+  "structural_and_clinical": {
+    "n": 100000,
+    "duplicate_patient_id_errors": [],
+    "structurally_valid": 100000,
+    "structural_error_records": {},
+    "clinically_consistent": 100000,
+    "clinical_error_records": {},
+    "total_clinical_warnings": 16297,
+    "warnings_by_kind": {
+      "LDL clipped at floor (feasible but < 30)": 7548,
+      "lipid_panel internally impossible (TC < HDL + TG/5)": 2283,
+      "ecg.superclasses empty (PTB-XL gap)": 6466
+    },
+    "checks_performed_counts": {
+      "lipid_panel_interpretation_consistency": 100000,
+      "lipid_panel_internal_feasibility": 100000,
+      "diabetes_hba1c_consistency": 100000,
+      "hba1c_plausibility_given_age_sex": 88543,
+      "hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared": 100000,
+      "timeline_labs_date_consistency": 100000,
+      "diagnosis_risk_factor_consistency": 100000,
+      "medical_history_diagnosis_consistency": 100000,
+      "medication_diagnosis_consistency": 100000,
+      "blood_pressure_hypertension_label_consistency": 100000,
+      "bmi_height_weight_arithmetic_skipped_height_weight_unpopulated": 100000,
+      "encounter_timeline_referential_integrity": 100000,
+      "unimplemented_domains_confirmed_absent": 100000,
+      "ecg_remains_metadata_only": 100000
+    }
+  },
+  "migration_integrity": {
+    "source_records_checked": 100000,
+    "output_records_with_no_matching_source": [],
+    "source_records_with_no_matching_output": [],
+    "records_matching_recomputation_exactly": 100000,
+    "records_differing_from_recomputation": {},
+    "records_migrate_errors": {}
+  },
+  "statistics": {
+    "n": 100000,
+    "blood_pressure": {
+      "present": 100000,
+      "missing": 0,
+      "systolic_mm_hg": {
+        "n": 100000,
+        "mean": 125.04,
+        "sd": 15.544,
+        "min": 70,
+        "max": 191
+      },
+      "diastolic_mm_hg": {
+        "n": 100000,
+        "mean": 82.531,
+        "sd": 10.259,
+        "min": 41,
+        "max": 130
+      },
+      "pulse_pressure_mm_hg": {
+        "n": 100000,
+        "mean": 42.509,
+        "sd": 10.47,
+        "min": 20,
+        "max": 89
+      },
+      "sbp_gt_dbp_violations": 0,
+      "pulse_pressure_below_20": 0,
+      "raised_bp_count": 31655,
+      "age_extrapolated_count": 52684,
+      "distinct_sbp_values": 120,
+      "distinct_dbp_values": 83
+    },
+    "lipid_feasibility": {
+      "n": 100000,
+      "internally_impossible_tc_below_components": {
+        "count": 2283,
+        "pct": 2.28
+      },
+      "ldl_clipped_at_floor_but_feasible": {
+        "count": 7548,
+        "pct": 7.55
+      },
+      "triglycerides_above_friedewald_validity_400": {
+        "count": 0,
+        "pct": 0.0
+      }
+    },
+    "missingness": {
+      "family_history": {
+        "empty_or_null": 100000,
+        "pct": 100.0
+      },
+      "echo": {
+        "empty_or_null": 100000,
+        "pct": 100.0
+      },
+      "labs": {
+        "empty_or_null": 11457,
+        "pct": 11.46
+      },
+      "medications": {
+        "empty_or_null": 90795,
+        "pct": 90.8
+      },
+      "diagnoses": {
+        "empty_or_null": 57179,
+        "pct": 57.18
+      },
+      "medical_history": {
+        "empty_or_null": 57179,
+        "pct": 57.18
+      },
+      "encounters": {
+        "empty_or_null": 0,
+        "pct": 0.0
+      }
+    },
+    "schema_versions": {
+      "0.8": 100000
+    },
+    "exact_duplicate_records": 0,
+    "unique_patient_ids": 100000,
+    "ecg": {
+      "superclasses_empty": 6466,
+      "signal_available_true": 0
+    }
+  }
+}

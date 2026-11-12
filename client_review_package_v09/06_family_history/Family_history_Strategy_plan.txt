@@ -1,0 +1,229 @@
+FAMILY HISTORY — EVIDENCE-BACKED STRATEGY PLAN
+=================================================
+Date: 2026-10-29
+Author: Claude Code (autonomous session), per explicit user request after
+reviewing docs/M8_DECISION_BRIEF.md Decision 2.
+Status: SUPERSEDED 2026-11-10 by docs/DECISIONS.md D020 — the owner
+chose a calibrated parent simulation for ages 20-44 (plus diabetes
+conditioning) over this document's 45+-only Step 1. Kept for the
+evidence trail in §2. Note: §2.2's "~3.13" odds ratio could not be
+traced to a primary source; D020 uses LASI's verified crude OR 3.80.
+
+-------------------------------------------------------------------
+1. WHY THIS DOCUMENT EXISTS
+-------------------------------------------------------------------
+The project's target population is the GENERAL Indian population,
+ages 20-89 (docs/DECISIONS.md D008, D004). `family_history` has been
+null for every synthetic patient since M1 because no evidence source
+was ever found that covers the full 20-89 range.
+
+The only evidence previously surfaced (docs/M4F_FINAL_CLINICAL_AUDIT.md,
+docs/M8_DECISION_BRIEF.md Decision 2) was a single LASI figure covering
+ONLY ages 45+. The user correctly objected that generating a field for
+less than half the age range, with nothing proposed for the rest, is
+not a real plan — it just reproduces the "leave null" outcome for most
+patients while adding complexity for the oldest segment only. This
+document is the deeper, evidence-backed research the user asked for,
+plus a concrete recommended strategy.
+
+-------------------------------------------------------------------
+2. EVIDENCE GATHERED THIS SESSION (web research, 2026-10-29)
+-------------------------------------------------------------------
+
+2.1 LASI (Longitudinal Ageing Study in India), Wave 1, 2017-18
+    - Sample: 58,734 adults. Geographic scope: all Indian states/UTs
+      except Sikkim (near-national).
+    - AGE RANGE: 45+ ONLY. This is LASI's whole design — it is a study
+      of ageing, it was never fielded on adults under 45.
+    - Figures found:
+        * Family history of diabetes: 14.33% (already known from prior
+          sessions, M4F/M8).
+        * Family history of cardiovascular disease (combined "chronic
+          heart disease, stroke and CVD", reported by father/mother/
+          brother/sister): 11.61% (newly confirmed this session, from
+          "Additive interaction of family medical history of
+          cardiovascular diseases with hypertension and diabetes on the
+          diagnosis of cardiovascular diseases among older adults in
+          India", PMC11659756, same LASI Wave 1 cohort).
+    - Verdict: REAL, national-scope, nationally-representative evidence
+      for TWO conditions (diabetes, CVD) — but structurally limited to
+      45+. No amount of further searching changes LASI's own sampling
+      frame; this is not a gap that more research can close.
+
+2.2 ICMR-INDIAB (the project's OWN primary source for hypertension/
+    diabetes/hyperlipidemia/lipid panel/HbA1c — ages 20+, national,
+    113,043 participants, the best-matching population this project
+    already relies on elsewhere)
+    - CONFIRMED: INDIAB's questionnaire DOES collect family history of
+      diabetes and heart disease as a covariate (stated explicitly in
+      multiple secondary sources describing its methodology).
+    - CONFIRMED: family history of diabetes is used as a RISK-FACTOR
+      covariate in INDIAB-derived regression analyses (an odds ratio of
+      ~3.13, 95% CI 2.71-3.61, recurs across secondary sources).
+    - NOT FOUND: a published POPULATION PREVALENCE PERCENTAGE for family
+      history of diabetes or heart disease from the main ICMR-INDIAB-17
+      national paper (Anjana et al., Lancet Diabetes & Endocrinology,
+      2023) or any of its companion papers located this session. The
+      paper's own reported headline results are diabetes/prediabetes/
+      hypertension/dyslipidemia/obesity prevalence — NOT family history
+      prevalence. An odds ratio measures association strength, not what
+      fraction of the population has a positive family history — it
+      cannot be used as a sampling probability.
+    - The full-text Lancet article returned HTTP 403 (paywalled); no
+      free PMC/ResearchGate mirror with the relevant table was located.
+    - Verdict: PARTIALLY SUPPORTED at best. The best-fit population
+      (same ages, same national scope as everything else in this
+      project) almost certainly has this data in its raw microdata, but
+      no accessible publication reports it as a descriptive prevalence
+      figure. Not usable without the underlying dataset, which is not
+      publicly downloadable and is out of scope to pursue given this
+      project's 4-5 week timeline (CLAUDE.md §1).
+
+2.3 WHO STEPS state-level NCD risk-factor surveys (ages 18-69 — the
+    best AGE match of anything found, overlapping almost the entire
+    target range except 70-89)
+    - Punjab (2014-15, n=5,127): family history of diabetes 23.2%,
+      family history of hypertension 38.3%.
+    - Haryana (2016-18, n=5,078): family history of diabetes 20.8%,
+      family history of hypertension 42.6%.
+    - Madhya Pradesh and Tamil Nadu STEPS surveys were also located but
+      their family-history figures specifically were not extracted this
+      session (would need a follow-up fetch of the individual papers).
+    - Verdict: REAL, age-range-appropriate evidence — but STATE-level,
+      not national. Only a handful of India's 28 states/8 UTs have a
+      published STEPS family-history figure. Combining 2-4 individual
+      state surveys into one "national" marginal would require inventing
+      a population-weighting methodology across states that were NOT
+      selected to be nationally representative when combined — this is
+      the exact problem docs/DECISIONS.md D010 already identified and
+      REJECTED for a different field (urban/rural BMI combination:
+      "that would be an engineering assumption presented as if it were
+      sourced evidence, which this project does not do silently").
+      The same objection applies here with the same force.
+
+2.4 NFHS-5 (National Family Health Survey, 2019-21)
+    - Searched specifically for a family-history-of-disease module.
+    - NOT FOUND. NFHS-5's clinical/anthropometric/biochemical component
+      DIRECTLY MEASURES blood pressure and blood glucose (the source
+      this project already uses for BP, D017) — it does not appear to
+      ask about family history of disease as a questionnaire item.
+    - Verdict: NOT SUPPORTED. (Consistent with NFHS's design as a
+      fertility/health/nutrition survey, not a risk-factor survey.)
+
+2.5 Sources NOT yet checked (identified, not pursued, due to time
+    budget — listed so a future session does not have to rediscover
+    them):
+    - Individual state STEPS papers beyond Punjab/Haryana (Tamil Nadu,
+      Madhya Pradesh, and others) for their own family-history figures,
+      if the goal later becomes "assemble a multi-state proxy with an
+      explicit, disclosed combination caveat" rather than a true
+      national figure.
+    - LASI Wave 2 (fielded 2022-23) — if its age range or questionnaire
+      differs from Wave 1, re-check; not verified this session.
+    - A possible numbered ICMR-INDIAB companion paper (the series
+      includes INDIAB-18 through at least INDIAB-24, covering topics
+      like kidney function, metabolic obesity, gestational diabetes) —
+      none located this session specifically reports family-history
+      prevalence as a headline result, but the full list was not
+      exhaustively checked paper-by-paper.
+
+-------------------------------------------------------------------
+3. THE HONEST CONCLUSION
+-------------------------------------------------------------------
+No single source found, in this session or in any prior session, gives
+a national, 20-89-covering, directly-published family-history
+prevalence figure for any condition. This is not a research failure to
+fix with more searching — LASI's 45+ design and the state-only scope of
+the STEPS surveys are structural facts about what exists, not gaps in
+how hard anyone looked. ICMR-INDIAB is the one source that could close
+this gap exactly (matching age range AND national scope), but the
+number it would need was not published in any paper this session could
+access.
+
+This means: a family_history field that is accurate for the WHOLE
+20-89 population, backed by a single clean source, does not currently
+exist to generate from. Any implementation today will necessarily be
+partial-coverage, exactly the situation the user flagged as
+insufficient — the question is how to make that partiality honest,
+useful, and consistent with how this project has already solved the
+identical structural problem elsewhere.
+
+-------------------------------------------------------------------
+4. RECOMMENDED STRATEGY (tiered, modeled on the D017 BP precedent)
+-------------------------------------------------------------------
+This project already had this exact shape of problem once before: BP
+evidence (NFHS-5) only covers men to 54 and women to 49, but the target
+population goes to 89. D017's solution was NOT to leave BP null for
+everyone, and NOT to invent evidence for the uncovered ages — it was to
+populate what the evidence actually supports, and explicitly FLAG the
+extrapolated portion per record (`extrapolated_beyond_source_age_range`)
+rather than silently presenting it as equally well-evidenced. Measured
+result: 52.7% of the dataset carries that flag — a known, disclosed
+limitation, not a hidden one.
+
+The same shape applies cleanly here:
+
+STEP 1 (recommended now): Populate `family_history` for ages 45+ using
+the two verified LASI figures:
+    - family_history.diabetes: Bernoulli(0.1433), ages 45+ only
+    - family_history.cardiovascular_disease: Bernoulli(0.1161), ages 45+
+      only (combined heart disease/stroke/CVD, per LASI's own definition
+      — do not split into finer sub-conditions LASI itself did not
+      separate)
+  Each entry carries:
+    - source citation (LASI Wave 1, 2017-18, PMC11659756 for CVD; the
+      already-cited LASI diabetes paper for diabetes)
+    - an explicit `evidence_age_range: "45+"` field on the record (or
+      equivalent), so no downstream consumer can mistake 45+ coverage
+      for whole-population coverage
+    - `family_history: null` for every patient under 45 (continuing
+      current behavior for that segment — NOT a new assumption, the
+      status quo for 55%+ of the population)
+
+STEP 2 (do not implement without further explicit approval): If broader
+age coverage becomes a hard requirement, the only currently-available
+path is the WHO STEPS state-level figures (§2.3), combined with an
+EXPLICIT, disclosed combination caveat (e.g., "population-weighted
+average of the N states with a published STEPS family-history figure,
+NOT representative of states without one") — structurally the same
+honesty trade D010 already made for a different field, offered here
+only as an option, not a recommendation, since it is a real step down
+in evidence quality from LASI.
+
+STEP 3 (not pursued, logged for a future session): obtaining ICMR-
+INDIAB's underlying microdata (through a formal data-access request to
+ICMR, outside this project's current tooling and timeline) would be the
+single best fix, since it would give a 20+ national figure matching
+every other risk factor this project already uses INDIAB for. Flagged
+as a known, real, currently-inaccessible possibility — not a dead end,
+just outside what this session's tools and the project's 4-5 week
+timeline can pursue.
+
+-------------------------------------------------------------------
+5. WHAT THIS STRATEGY DOES NOT DO
+-------------------------------------------------------------------
+- Does NOT invent a figure for ages 20-44. No source was found; none is
+  assumed.
+- Does NOT silently extrapolate the 45+ rate downward to younger ages
+  (that would repeat the exact error D007 already rejected for age
+  distribution: assuming a rate measured on one sub-population applies
+  uniformly to a different one, without evidence).
+- Does NOT combine LASI with the STEPS state surveys into one blended
+  national figure — they are different age ranges, different sampling
+  frames, and blending them would hide rather than disclose the
+  evidence gap.
+- Does NOT treat this as resolved. This is a proposal pending explicit
+  sign-off before any schema or generation code changes, per the
+  project's standing human-checkpoint convention.
+
+-------------------------------------------------------------------
+6. NEXT ACTION
+-------------------------------------------------------------------
+Awaiting the user's decision on Step 1 (implement 45+ partial coverage
+with the explicit age-range flag) before writing any code. If approved,
+implementation follows the exact pattern already used for medications/
+diagnoses (small, additive schema change; deterministic generation
+function; structural + clinical-consistency validator extension; 50-
+record pilot before any full-dataset regeneration) — see
+docs/Further_Steps_for_patient-Record_complete.txt for how this fits
+into the overall remaining patient-record work.

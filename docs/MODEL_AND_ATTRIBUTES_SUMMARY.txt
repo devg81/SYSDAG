@@ -1,0 +1,64 @@
+SYNTHETIC CARDIOVASCULAR PATIENT GENERATION — MODEL & ATTRIBUTE SUMMARY
+(see PROJECT_STATE.md / DECISIONS.md for full detail; this is a quick reference)
+
+MODEL USED TO GENERATE THE EXISTING 100K DATASET (M5/M5.5)
+- NOT an ML/generative model — a deterministic, rule-based + evidence-sampled
+  pipeline. No neural network produced any field in this dataset.
+- Modules: generation/indian_population.py (demographics, risk factors, lipids,
+  HbA1c, BP, medication Bernoulli draws) + generation/clinical_history.py
+  (diagnoses/medical_history/medications, pure derivation, no RNG) +
+  integration/build_patient.py (assembly) + ingestion/ptbxl_source.py (ECG
+  metadata, sampled from real PTB-XL records, not synthesized).
+- Sampling method: category-then-uniform / Bernoulli draws against
+  Census 2011, ICMR-NNMS 2017-18, ICMR-INDIAB-17/2023, NFHS-5 parameters
+  (configs/indian_population.yaml); LDL derived via Friedewald equation;
+  lipid_interpretations/diagnoses/medications derived deterministically,
+  never independently sampled.
+- Run config: seed 42, Schema v0.7 at generation (M5); migrated to v0.8
+  (M5.5, blood pressure/encounters/timeline fields added, same seed replayed).
+- Output: outputs/m5/100k_patients/ (v0.7, original) and
+  outputs/m8/100k_patients_v08/ (v0.8, current authoritative copy).
+- Validation: 100,000/100,000 structurally valid and clinically consistent,
+  0 duplicate IDs (docs/M5_100K_DATASET_REPORT.md, docs/M8_FULL_DATASET_VALIDATION_REPORT.md).
+
+GENERATIVE MODEL STATUS
+- No final generative model selected yet (open human checkpoint, Stage 9/M6)---(Most likely CardioSynth).
+- ECG waveform candidates evaluated:
+  * Inherited per-class GAN (syngen/SynGen, 5 checkpoints: CD/HYP/MI/NORM/STTC)
+    - works, held-out-validated (KS~0.07-0.10), but NOT patient-conditioned
+      (5 independent generators, no shared weights, no conditioning vector).
+  * SSSD-ECG — strongest external candidate (MIT code, PTB-XL SCP-code
+    conditioning, ~26.5M params). BLOCKED: pretrained-weight license unknown
+    (needs authenticated Figshare access).
+  * CardioSynth/CardioSync — REJECTED, not a real usable match (unlicensed
+    single-lead demo, not 12-lead/PTB-XL compatible).
+- Current clinical/demographic fields are RULE-BASED / evidence-sampled, not
+  model-generated (no ML model used for patient attributes yet).
+
+DATA SOURCE
+- PTB-XL (ECG metadata, SCP labels, folds) — reused via ingestion/ptbxl_source.py
+- Indian population evidence: Census 2011, ICMR-NNMS 2017-18, ICMR-INDIAB-17/2023,
+  NFHS-5 (BP), LASI (family history, not yet used) — see configs/indian_population.yaml
+
+ATTRIBUTES GENERATED, WITH DEPENDENCIES
+  demographics (age, sex, state, urban_rural)        — independent draws
+  risk_factors.bmi                                    <- sex
+  risk_factors.smoking_status                         <- sex
+  risk_factors.hypertension, diabetes, hyperlipidemia — independent Bernoulli (marginal)
+  lipid_panel (TC, TG, HDL)                            — independent marginals (known issue, see below)
+  lipid_panel.LDL                                     <- TC, TG, HDL (Friedewald equation)
+  lipid_interpretations (NCEP_ATP_III, LAI_2020)      <- lipid_panel (derived, never sampled)
+  labs.HbA1c                                          <- diabetes label, age, sex (only if non-diabetic)
+  blood_pressure (systolic/diastolic)                 <- hypertension label, age, sex
+  diagnoses.hypertension / diabetes                   <- risk_factors flags (1:1 promotion)
+  medical_history.chronic_condition                   <- diagnoses (by reference)
+  medications (antihypertensive, antidiabetic only)   <- diagnoses + NNMS treatment-rate Bernoulli
+  encounters, clinical_timeline                       — structural containers, reference other fields
+  ecg (metadata only, no waveform yet)                 — sampled from PTB-XL pool (independent of demographics)
+
+NOT YET GENERATED (null by design, evidence gap)
+  family_history, height_cm/weight_kg, statin/antiplatelet meds, echo
+
+KNOWN OPEN ISSUE
+  TC/TG/HDL sampled independently -> ~2.3% internally-impossible lipid panels,
+  ~9.8% LDL at clip floor. Fix requires a human sampling-design decision (not yet made).

@@ -1,0 +1,107 @@
+{
+  "NORM": {
+    "held_out_fold9_record_count": 944,
+    "train_fold1_8_record_count": 7553,
+    "synthetic_record_count": 500,
+    "compared_n": 500,
+    "held_out_metrics": {
+      "ks_statistic_mean": 0.0982,
+      "kl_divergence_mean": 0.0844,
+      "mse_waveform_shape": 0.0754,
+      "variance": 0.31
+    },
+    "original_leaky_metrics_recomputed_for_reference": {
+      "ks_statistic_mean": 0.0982,
+      "kl_divergence_mean": 0.0822,
+      "mse_waveform_shape": 0.0751
+    },
+    "generalization_gap": {
+      "ks_statistic_mean_delta": 0.0,
+      "kl_divergence_mean_delta": 0.0022
+    }
+  },
+  "MI": {
+    "held_out_fold9_record_count": 413,
+    "train_fold1_8_record_count": 3315,
+    "synthetic_record_count": 500,
+    "compared_n": 413,
+    "held_out_metrics": {
+      "ks_statistic_mean": 0.084,
+      "kl_divergence_mean": 0.0676,
+      "mse_waveform_shape": 0.0508,
+      "variance": 0.2857
+    },
+    "original_leaky_metrics_recomputed_for_reference": {
+      "ks_statistic_mean": 0.0855,
+      "kl_divergence_mean": 0.0664,
+      "mse_waveform_shape": 0.0508
+    },
+    "generalization_gap": {
+      "ks_statistic_mean_delta": -0.0015,
+      "kl_divergence_mean_delta": 0.0012
+    }
+  },
+  "STTC": {
+    "held_out_fold9_record_count": 516,
+    "train_fold1_8_record_count": 4069,
+    "synthetic_record_count": 500,
+    "compared_n": 500,
+    "held_out_metrics": {
+      "ks_statistic_mean": 0.0727,
+      "kl_divergence_mean": 0.0817,
+      "mse_waveform_shape": 0.0732,
+      "variance": 0.2627
+    },
+    "original_leaky_metrics_recomputed_for_reference": {
+      "ks_statistic_mean": 0.0777,
+      "kl_divergence_mean": 0.0898,
+      "mse_waveform_shape": 0.071
+    },
+    "generalization_gap": {
+      "ks_statistic_mean_delta": -0.005,
+      "kl_divergence_mean_delta": -0.0081
+    }
+  },
+  "CD": {
+    "held_out_fold9_record_count": 497,
+    "train_fold1_8_record_count": 3905,
+    "synthetic_record_count": 500,
+    "compared_n": 497,
+    "held_out_metrics": {
+      "ks_statistic_mean": 0.0898,
+      "kl_divergence_mean": 0.0661,
+      "mse_waveform_shape": 0.0509,
+      "variance": 0.309
+    },
+    "original_leaky_metrics_recomputed_for_reference": {
+      "ks_statistic_mean": 0.092,
+      "kl_divergence_mean": 0.0649,
+      "mse_waveform_shape": 0.0492
+    },
+    "generalization_gap": {
+      "ks_statistic_mean_delta": -0.0023,
+      "kl_divergence_mean_delta": 0.0012
+    }
+  },
+  "HYP": {
+    "held_out_fold9_record_count": 219,
+    "train_fold1_8_record_count": 1822,
+    "synthetic_record_count": 500,
+    "compared_n": 219,
+    "held_out_metrics": {
+      "ks_statistic_mean": 0.0772,
+      "kl_divergence_mean": 0.0573,
+      "mse_waveform_shape": 0.0294,
+      "variance": 0.2525
+    },
+    "original_leaky_metrics_recomputed_for_reference": {
+      "ks_statistic_mean": 0.0769,
+      "kl_divergence_mean": 0.0553,
+      "mse_waveform_shape": 0.0283
+    },
+    "generalization_gap": {
+      "ks_statistic_mean_delta": 0.0003,
+      "kl_divergence_mean_delta": 0.002
+    }
+  }
+}

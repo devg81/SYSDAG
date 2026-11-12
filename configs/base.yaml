@@ -1,0 +1,12 @@
+# Base configuration — Stage 2 foundation.
+# All paths are relative to the repository root.
+
+ptbxl_csv: syngen/SynGen/SynGen/dataset/ptbxl_database.csv
+scp_csv: syngen/SynGen/SynGen/dataset/scp_statements.csv
+data_root: syngen/SynGen/SynGen/dataset
+
+scp_threshold: 50.0
+random_seed: 42
+
+# Patient-level folds respected throughout (CLAUDE.md §7).
+training_folds: [1, 2, 3, 4, 5, 6, 7, 8]

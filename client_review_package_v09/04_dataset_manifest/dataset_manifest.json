@@ -1,0 +1,59 @@
+{
+  "dataset_name": "sysdag_m9_100k_v09",
+  "dataset_version": "0.9.0",
+  "patient_count": 100000,
+  "schema_version": "0.9",
+  "source_dataset": "none -- generated fresh via integration/generate_population.py (seed = random_seed + sequence)",
+  "migration_entry_point": null,
+  "code_state": {
+    "git_head_commit": "4ce0e72ea27ecf224dc1008501c85b8c7f97ce9f",
+    "note": "this project does not commit per-milestone by standing convention (see docs/PROJECT_STATE.md); the schema/generation/validation code at the time of this freeze is the working tree, not necessarily this commit alone"
+  },
+  "validation_status": {
+    "structural": "PASS",
+    "structurally_valid_count": 100000,
+    "structurally_invalid_count": 0,
+    "unique_patient_ids": 100000,
+    "duplicate_patient_id_errors": 0
+  },
+  "clinical_validation_status": {
+    "status": "PASS",
+    "clinically_consistent_count": 100000,
+    "clinical_errors": 0,
+    "clinical_warnings": 14206,
+    "warnings_by_kind": {
+      "LDL clipped at floor (feasible but < 30)": 7740,
+      "ecg.superclasses empty (PTB-XL gap)": 6466
+    },
+    "checks_performed": [
+      "blood_pressure_hypertension_label_consistency",
+      "bmi_height_weight_arithmetic_skipped_height_weight_unpopulated",
+      "diabetes_hba1c_consistency",
+      "diagnosis_risk_factor_consistency",
+      "ecg_remains_metadata_only",
+      "encounter_timeline_referential_integrity",
+      "family_history_shape_and_derivation",
+      "hba1c_plausibility_given_age_sex",
+      "hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared",
+      "lipid_panel_internal_feasibility",
+      "lipid_panel_interpretation_consistency",
+      "medical_history_diagnosis_consistency",
+      "medication_diagnosis_consistency",
+      "timeline_labs_date_consistency",
+      "unimplemented_domains_confirmed_absent"
+    ]
+  },
+  "accepted_limitations": {
+    "lipid_panel_internal_feasibility": "Infeasible TC/TG/HDL triples are rejected and redrawn (D019); LDL can still sit at the documented 30 mg/dL clip floor (validator WARNING).",
+    "blood_pressure_age_extrapolation": "NFHS-5 source coverage is men<=54, women<=49; older patients use the oldest band held constant (conservative, not invented). Flagged per record via blood_pressure.extrapolated_beyond_source_age_range.",
+    "family_history": "LASI observed for 45+; MODEL-DERIVED (calibrated parent simulation) for 20-44, tagged per record via family_history.derivation (D020).",
+    "air_quality": "2023 CPCB state annual mean, urban-station-weighted and applied unadjusted to rural patients (flagged per record); null with a reason for 9 unmonitored states/UTs (D021).",
+    "height_weight": "not generated -- no national mean+SD of Indian adult height located",
+    "echo": "not generated -- scope entirely open",
+    "hyperlipidemia_diagnosis": "deliberately deferred (D015) -- unchanged by this freeze",
+    "ecg_waveform": "NOT GENERATED -- metadata-only (Stage 4 explicitly deferred, out of scope)"
+  },
+  "migration_integrity": "not checked in this run",
+  "directory_checksum_sha256": "53fcae20983f2401823123754bbf1c5e53ec6c36a72126f8bdacd575d7308d1e",
+  "full_validation_report": "outputs/m9/100k_v09_validation_report.json"
+}

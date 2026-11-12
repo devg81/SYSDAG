@@ -1,0 +1,639 @@
+{
+  "source_dir": "outputs/m8/100k_patients_v08",
+  "n_records": 100000,
+  "fields": {
+    "blood_pressure.age_band_source": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "blood_pressure.diastolic_mm_hg": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "blood_pressure.extrapolated_beyond_source_age_range": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "blood_pressure.measured_at": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "blood_pressure.pulse_pressure(derived)": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "blood_pressure.systolic_mm_hg": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "demographics.age": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "demographics.height_cm": {
+      "valid": 0,
+      "valid_pct": 0.0,
+      "null": 100000,
+      "null_pct": 100.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "demographics.sex": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "demographics.state": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "demographics.urban_rural": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "demographics.weight_kg": {
+      "valid": 0,
+      "valid_pct": 0.0,
+      "null": 100000,
+      "null_pct": 100.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "family_history": {
+      "valid": 0,
+      "valid_pct": 0.0,
+      "null": 100000,
+      "null_pct": 100.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "labs.HbA1c": {
+      "valid": 88543,
+      "valid_pct": 88.543,
+      "null": 11457,
+      "null_pct": 11.457,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "risk_factors.bmi": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "risk_factors.diabetes": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "risk_factors.hyperlipidemia": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "risk_factors.hypertension": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    },
+    "risk_factors.smoking_status": {
+      "valid": 100000,
+      "valid_pct": 100.0,
+      "null": 0,
+      "null_pct": 0.0,
+      "invalid": 0,
+      "invalid_pct": 0.0,
+      "invalid_examples": []
+    }
+  },
+  "distribution_vs_config": {
+    "age_uniform_ks": {
+      "test": "one-sample Kolmogorov-Smirnov (vs. configured uniform)",
+      "n": 100000,
+      "statistic": 0.0018408932677294043,
+      "p_value": 0.8863671395421607
+    },
+    "sex": {
+      "test": "chi-square goodness-of-fit",
+      "n": 100000,
+      "statistic": 0.010248858703513488,
+      "p_value": 0.9193626060152512,
+      "categories_with_expected_count_below_5": [],
+      "assumption_note": "all expected counts >= 5"
+    },
+    "urban_rural": {
+      "test": "chi-square goodness-of-fit",
+      "n": 100000,
+      "statistic": 0.1029810712492886,
+      "p_value": 0.7482811422746056,
+      "categories_with_expected_count_below_5": [],
+      "assumption_note": "all expected counts >= 5"
+    },
+    "state": {
+      "test": "chi-square goodness-of-fit",
+      "n": 100000,
+      "statistic": 48.128126683860636,
+      "p_value": 0.05487654843088827,
+      "categories_with_expected_count_below_5": [],
+      "assumption_note": "all expected counts >= 5"
+    },
+    "bmi_category_male": {
+      "test": "chi-square goodness-of-fit",
+      "n": 51454,
+      "statistic": 2.68552941858073,
+      "p_value": 0.2611227412302223,
+      "categories_with_expected_count_below_5": [],
+      "assumption_note": "all expected counts >= 5"
+    },
+    "bmi_category_female": {
+      "test": "chi-square goodness-of-fit",
+      "n": 48546,
+      "statistic": 1.7963867784430354,
+      "p_value": 0.40730483675949514,
+      "categories_with_expected_count_below_5": [],
+      "assumption_note": "all expected counts >= 5"
+    },
+    "smoking_male": {
+      "test": "chi-square goodness-of-fit",
+      "n": 51454,
+      "statistic": 1.6682378283770327,
+      "p_value": 0.1964947291409845,
+      "categories_with_expected_count_below_5": [],
+      "assumption_note": "all expected counts >= 5"
+    },
+    "smoking_female": {
+      "test": "chi-square goodness-of-fit",
+      "n": 48546,
+      "statistic": 0.05914166089583954,
+      "p_value": 0.8078577596310907,
+      "categories_with_expected_count_below_5": [],
+      "assumption_note": "all expected counts >= 5"
+    },
+    "hypertension": {
+      "test": "exact binomial test",
+      "n": 100000,
+      "observed_proportion": 0.35398,
+      "expected_proportion": 0.355,
+      "p_value": 0.5023688551359502
+    },
+    "diabetes": {
+      "test": "exact binomial test",
+      "n": 100000,
+      "observed_proportion": 0.11457,
+      "expected_proportion": 0.114,
+      "p_value": 0.5706041856732397
+    },
+    "hyperlipidemia": {
+      "test": "exact binomial test",
+      "n": 100000,
+      "observed_proportion": 0.81226,
+      "expected_proportion": 0.812,
+      "p_value": 0.8364885726210003
+    }
+  },
+  "age_coverage_bands": {
+    "45-69": 36441,
+    "20-44": 36127,
+    "70-89": 27432,
+    "note": "45-69 overlaps both NNMS (18-69) and LASI (45+); 70-89 is beyond NNMS coverage; <45 is outside LASI coverage"
+  },
+  "smoking_status_counts_by_sex": {
+    "male": {
+      "never": 25256,
+      "current": 26198
+    },
+    "female": {
+      "never": 42217,
+      "current": 6329
+    }
+  },
+  "urban_share_by_state_generated": {
+    "Andaman and Nicobar Islands": 0.4286,
+    "Andhra Pradesh": 0.3227,
+    "Arunachal Pradesh": 0.3851,
+    "Assam": 0.3125,
+    "Bihar": 0.307,
+    "Chandigarh": 0.3294,
+    "Chhattisgarh": 0.32,
+    "Dadra and Nagar Haveli": 0.3611,
+    "Daman and Diu": 0.5,
+    "Delhi": 0.2991,
+    "Goa": 0.2564,
+    "Gujarat": 0.3081,
+    "Haryana": 0.3054,
+    "Himachal Pradesh": 0.352,
+    "Jammu and Kashmir": 0.2854,
+    "Jharkhand": 0.3109,
+    "Karnataka": 0.3038,
+    "Kerala": 0.305,
+    "Lakshadweep": 0.0,
+    "Madhya Pradesh": 0.3102,
+    "Maharashtra": 0.3145,
+    "Manipur": 0.345,
+    "Meghalaya": 0.3221,
+    "Mizoram": 0.2617,
+    "Nagaland": 0.3248,
+    "Orissa": 0.3059,
+    "Puducherry": 0.3153,
+    "Punjab": 0.3195,
+    "Rajasthan": 0.3094,
+    "Sikkim": 0.3864,
+    "Tamil Nadu": 0.3126,
+    "Tripura": 0.3233,
+    "Uttar Pradesh": 0.3131,
+    "Uttarakhand": 0.2976,
+    "West Bengal": 0.3055
+  },
+  "urban_share_by_state_spread": [
+    0.0,
+    0.5
+  ],
+  "family_history_distinct_values": {
+    "null": 100000
+  },
+  "blood_pressure": {
+    "by_label_region": {
+      "raised": {
+        "n": 30187,
+        "mean_sbp": 140.02,
+        "mean_dbp": 93.44,
+        "pct_below_140_90": 0.0,
+        "label_region_violations": 0
+      },
+      "normotensive": {
+        "n": 64602,
+        "mean_sbp": 118.08,
+        "mean_dbp": 77.49,
+        "pct_below_140_90": 100.0,
+        "label_region_violations": 0
+      },
+      "unconstrained": {
+        "n": 5211,
+        "mean_sbp": 124.47,
+        "mean_dbp": 81.88,
+        "pct_below_140_90": 71.83,
+        "label_region_violations": 0
+      }
+    },
+    "pulse_pressure_counts_20_to_25": {
+      "18": 0,
+      "19": 0,
+      "20": 445,
+      "21": 554,
+      "22": 683,
+      "23": 804,
+      "24": 942,
+      "25": 1106
+    },
+    "extrapolated_flag_mismatches": 0,
+    "age_band_source_mismatches": 0,
+    "pp_floor_mass_removed_by_band_region": [
+      {
+        "sex": "male",
+        "band": "20-24",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 0.125,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "20-24",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 0.194,
+        "isolated_diastolic_share_after_floor_pct": 60.641
+      },
+      {
+        "sex": "male",
+        "band": "20-24",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 0.131,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "25-29",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 0.181,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "25-29",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 0.228,
+        "isolated_diastolic_share_after_floor_pct": 64.257
+      },
+      {
+        "sex": "male",
+        "band": "25-29",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 0.187,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "30-34",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 0.315,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "30-34",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 0.375,
+        "isolated_diastolic_share_after_floor_pct": 60.781
+      },
+      {
+        "sex": "male",
+        "band": "30-34",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 0.327,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "35-39",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 0.721,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "35-39",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 0.704,
+        "isolated_diastolic_share_after_floor_pct": 56.817
+      },
+      {
+        "sex": "male",
+        "band": "35-39",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 0.716,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "40-44",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 1.733,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "40-44",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 1.186,
+        "isolated_diastolic_share_after_floor_pct": 48.671
+      },
+      {
+        "sex": "male",
+        "band": "40-44",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 1.557,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "45-49",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 2.277,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "45-49",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 1.124,
+        "isolated_diastolic_share_after_floor_pct": 39.876
+      },
+      {
+        "sex": "male",
+        "band": "45-49",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 1.86,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "50-54",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 2.117,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "male",
+        "band": "50-54",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 0.858,
+        "isolated_diastolic_share_after_floor_pct": 34.019
+      },
+      {
+        "sex": "male",
+        "band": "50-54",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 1.622,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "20-24",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 1.154,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "20-24",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 1.596,
+        "isolated_diastolic_share_after_floor_pct": 87.259
+      },
+      {
+        "sex": "female",
+        "band": "20-24",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 1.169,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "25-29",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 1.748,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "25-29",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 1.501,
+        "isolated_diastolic_share_after_floor_pct": 80.541
+      },
+      {
+        "sex": "female",
+        "band": "25-29",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 1.734,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "30-34",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 2.047,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "30-34",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 1.421,
+        "isolated_diastolic_share_after_floor_pct": 73.557
+      },
+      {
+        "sex": "female",
+        "band": "30-34",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 1.986,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "35-39",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 2.527,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "35-39",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 2.232,
+        "isolated_diastolic_share_after_floor_pct": 66.205
+      },
+      {
+        "sex": "female",
+        "band": "35-39",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 2.475,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "40-44",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 2.386,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "40-44",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 1.371,
+        "isolated_diastolic_share_after_floor_pct": 51.972
+      },
+      {
+        "sex": "female",
+        "band": "40-44",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 2.147,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "45-49",
+        "region": "normotensive",
+        "mass_removed_by_floor_pct": 3.644,
+        "isolated_diastolic_share_after_floor_pct": null
+      },
+      {
+        "sex": "female",
+        "band": "45-49",
+        "region": "raised",
+        "mass_removed_by_floor_pct": 1.105,
+        "isolated_diastolic_share_after_floor_pct": 34.974
+      },
+      {
+        "sex": "female",
+        "band": "45-49",
+        "region": "unconstrained",
+        "mass_removed_by_floor_pct": 2.869,
+        "isolated_diastolic_share_after_floor_pct": null
+      }
+    ]
+  },
+  "hba1c_presence_rule_violations": 0,
+  "measurement_dates_distinct": {
+    "2026-09-26": 100000
+  },
+  "unexpected_environment_or_vital_keys": {}
+}

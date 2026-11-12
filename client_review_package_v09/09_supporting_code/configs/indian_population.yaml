@@ -1,0 +1,1231 @@
+# Indian Population Configuration — M2C
+#
+# Every parameter here is traceable: source, year, population, geographic
+# scope, definition, stratification, marginal/conditional status,
+# transformation, and limitations are recorded alongside each value so a
+# reviewer can determine exactly where it came from, per
+# docs/INDIAN_GENERATION_STRATEGY.md section 9 and docs/DECISIONS.md D006.
+#
+# Evidence status per parameter (full detail in
+# docs/session_logs/2026-09-25_M2C-indian-conditioning.md, M2C-0 section):
+#   age            NOT SUPPORTED (no accessible adult age-band distribution
+#                  found) -> uniform(20, 89) engineering default
+#   sex            SUPPORTED (marginal, Census 2011)
+#   state          SUPPORTED (marginal, Census 2011, full state/UT table)
+#   urban_rural    SUPPORTED (marginal, Census 2011)
+#   bmi            PARTIALLY SUPPORTED (sex-conditional category
+#                  prevalence, NNMS; continuous value is an engineering
+#                  approximation within WHO BMI category ranges)
+#   smoking_status PARTIALLY SUPPORTED (sex-conditional current/never,
+#                  NNMS; "former" is not evidence-supported, not generated)
+#   hypertension   SUPPORTED (marginal only, ICMR-INDIAB)
+#   diabetes       SUPPORTED (marginal only, ICMR-INDIAB)
+#   hyperlipidemia PARTIALLY SUPPORTED (marginal only, ICMR-INDIAB,
+#                  reduced-coverage sub-sample)
+#   family_history PARTIALLY SUPPORTED (LASI observed 45+; parent-simulation
+#                  model-derived for 20-44, docs/DECISIONS.md D020)
+
+random_seed: 42
+
+population:
+  country: "India"
+  target_population: >-
+    GENERAL Indian population (docs/DECISIONS.md D008, 2026-09-26) -- NOT
+    a cardiovascular-disease-only population, hospital population,
+    cardiology-clinic population, high-risk CVD cohort, or CVD patient
+    registry. Restated precisely: the general adult Indian population,
+    ages 20-89 -- "general" resolves WHICH adult population (general vs.
+    clinical/CVD-specific, D008); the age scoping itself is a separate,
+    prior decision (D004, M1/M2C), not extended or narrowed by D008.
+  population_scope: >-
+    Adults, ages 20-89, matching ICMR-INDIAB's sampled range and the
+    existing PTB-XL 89-year age-clip convention already established in
+    docs/DECISIONS.md D004 -- NOT itself derived from Indian
+    age-structure evidence, see demographics.age below.
+  reference_period: >-
+    Sources span 2011 (Census of India) to 2023 (ICMR-INDIAB-17
+    publication) -- not a single reference year; see each parameter's own
+    "year" field below.
+  target_population_ambiguity_M2D6: >-
+    RESOLVED 2026-09-26 (docs/DECISIONS.md D008): the target is the
+    GENERAL Indian population (see target_population above), not one of
+    the narrower alternatives M2D flagged as candidates (CVD-only,
+    hospital, clinic, high-risk cohort, registry). IMPORTANT -- this
+    resolves WHICH population is the intended target; it does NOT mean
+    Census 2011 + NNMS 2017-18 + ICMR-INDIAB-17 combine into one single,
+    internally consistent OBSERVED population. They remain three separate
+    pieces of evidence, from different years/samples/age-ranges, each
+    informing a different component of one assembled, synthetic target
+    (docs/DECISIONS.md D008 spells out the mapping below in full). This
+    config still does NOT claim more consistency than that: (1)
+    demographics.sex/state/urban_rural are drawn from Census 2011's
+    GENERAL population (all ages, not adults-only) -- the correct source
+    for a general-population target, now that the target itself is
+    settled; (2) risk_factors.bmi/smoking_status are drawn from ICMR-NNMS's
+    surveyed population (adults 18-69 specifically); (3)
+    risk_factors.hypertension/diabetes/hyperlipidemia are drawn from
+    ICMR-INDIAB's surveyed population (adults 20+, a good match for our
+    20-89 scope). A patient aged 85 still gets BMI/smoking probabilities
+    from a survey that only sampled up to age 69 -- this specific
+    extrapolation gap is UNCHANGED by D008 and remains an open limitation
+    (documented per-parameter in risk_factors.bmi/smoking_status above),
+    distinct from the now-resolved "which population is the target"
+    question. See docs/session_logs/2026-09-25_M2D-calibration-quality-gate.md
+    for the original audit and docs/DECISIONS.md D008 for the resolution.
+
+demographics:
+  age:
+    source: "None located"
+    year: null
+    population: null
+    geographic_scope: null
+    definition: >-
+      Age in years, adults 20-89. The 20-89 range is chosen to match
+      ICMR-INDIAB's sampled population (the primary risk-factor source
+      below) and docs/DECISIONS.md D004's existing PTB-XL age-clip
+      convention -- it is a scoping choice, not itself sourced from Indian
+      age-structure evidence.
+    available_stratification: "None"
+    marginal_or_conditional: "N/A -- no usable distribution found"
+    transformation: >-
+      ENGINEERING DEFAULT: sampled uniformly over [20, 89]. Verification
+      effort (M2C, 4 attempts): a dedicated evidence-verification fork plus
+      three direct follow-up fetches (Wikipedia's Demographics of India
+      page, MoSPI's "Women and Men in India 2022" population-statistics
+      report, and web-search aggregators) found only a coarse
+      whole-population 3-band split (0-14: 25.68%, 15-64: 67.49%, 65+:
+      6.83%) attributed ambiguously to "2021 census estimates" -- India's
+      2021 Census was not actually conducted, so that figure's provenance
+      is doubtful. M2D REVISIT (2 more attempts): UN World Population
+      Prospects (2024 revision) was located but its granular 5-year-band
+      data is behind an interactive/JS chart, not fetchable as text;
+      India's own Sample Registration System Statistical Report 2020 (the
+      most authoritative candidate -- Registrar General of India, official
+      government source) was located at censusindia.gov.in but the fetch
+      failed on an SSL certificate error, not a content problem -- this
+      source may still be worth pursuing via a different access method
+      later. A better-sourced whole-population 3-band figure WAS found
+      (Registrar General of India population projections based on Census
+      2011, via dataforindia.com, current as of ~2026: 0-14 24%, 15-59
+      65%, 60+ 11%) -- explicitly better provenance than the M2C figure
+      (transparent about being a projection, not a mislabeled census).
+      REJECTED for use anyway: converting "15-59"/"60+" into our 20-89
+      range requires assuming uniform density within the 15-59 band to
+      extract a 20-59 sub-slice -- a real population pyramid is not flat
+      within a 45-year band. Quantified check: this naive reconstruction
+      would imply 20-59 = 84% / 60-89 = 16% of our adult range, vs.
+      uniform(20,89)'s 57%/43% split -- a large swing that would
+      UNDER-represent exactly the 60-89 age band where cardiovascular risk
+      concentrates, based on an assumption (within-band uniformity) known
+      to be false. Adopting it risked a worse, more consequential error
+      than the honestly-flat default. KEPT uniform(20,89).
+    limitations: >-
+      NOT SUPPORTED by Indian population evidence -- the weakest-evidenced
+      parameter in this configuration, confirmed again at M2D after
+      substantive additional research (6 total attempts across M2C+M2D).
+      Revisit if: (a) NFHS-5's full India Report Table 3.1 can be obtained
+      (dhsprogram.com/pubs/pdf/FR375/FR375.pdf, 600+ pages, exceeded fetch
+      limits both times attempted), or (b) the SRS Statistical Report 2020
+      PDF can be fetched via a method that tolerates its SSL certificate
+      issue (censusindia.gov.in/nada/index.php/catalog/44376/download/48048/SRS_STAT_2020.pdf).
+    evidence_tier: >-
+      B (engineering assumption) for the [20,89] range scoping; NO tier-A
+      evidence exists for the within-range shape -- uniform is not itself
+      a finding, it is the explicit absence of one (see M2D-12
+      classification in docs/session_logs/2026-09-25_M2D-calibration-quality-gate.md).
+    distribution:
+      type: uniform
+      min: 20
+      max: 89
+
+  sex:
+    source: "Census of India 2011"
+    year: 2011
+    population: "All-India, all ages"
+    geographic_scope: "National"
+    definition: "Sex ratio (females per 1000 males), converted to population share"
+    available_stratification: >-
+      National marginal; a rural/urban-conditional breakdown also exists
+      in the source (rural 949 females/1000 males, urban 929/1000) but is
+      NOT used here -- the ~0.5 percentage-point difference was judged not
+      worth the added sampling-order complexity (documented simplification,
+      not an evidence gap).
+    marginal_or_conditional: "marginal"
+    transformation: >-
+      943 females per 1000 males -> 943/(1000+943) = 48.53% female,
+      51.47% male. Simple arithmetic on the source's own published ratio,
+      not an estimate.
+    limitations: >-
+      15-year-old data (no 2021 Census was conducted, so no more recent
+      official figure exists). Encoded using the schema's existing
+      PTB-XL-derived convention: sex=0 male, sex=1 female
+      (schemas/patient_schema.py, established in M1). M2D note: this is
+      the GENERAL population's sex ratio (all ages), not an adult-specific
+      one -- part of the target-population ambiguity recorded above
+      (population.target_population_ambiguity_M2D6). Adult sex ratios can
+      differ from all-ages ratios (e.g. from differential mortality by
+      age); not separately verified.
+    evidence_tier: "A (observed) for the ratio itself; B (engineering) for applying an all-ages ratio to an adults-only generator"
+    distribution:
+      type: categorical
+      categories:
+        male: 0.5147
+        female: 0.4853
+
+  urban_rural:
+    source: "Census of India 2011"
+    year: 2011
+    population: "All-India, all ages"
+    geographic_scope: "National"
+    definition: "Population share by Census urban/rural settlement classification"
+    available_stratification: >-
+      National marginal only. State-level urban/rural splits exist in
+      Census 2011 tables but were not pulled into this configuration.
+    marginal_or_conditional: "marginal"
+    transformation: "None -- official Census percentages reported directly"
+    limitations: >-
+      15-year-old data, same caveat as sex above. Sampled independently of
+      state here, though a real joint state x urban/rural Census table
+      exists and could refine this in a later milestone. Same
+      general-vs-adult-population caveat as sex (see
+      population.target_population_ambiguity_M2D6).
+    evidence_tier: "A (observed) for the split itself; B (engineering) for applying it to an adults-only generator, and for the state/urban_rural independence assumption"
+    distribution:
+      type: categorical
+      categories:
+        rural: 0.6884
+        urban: 0.3116
+
+  state:
+    source: "Census of India 2011"
+    year: 2011
+    population: "All-India, all ages"
+    geographic_scope: "National, all 28 states + 7 union territories"
+    definition: >-
+      Each state/UT's population as a share of India's total 2011 Census
+      population (1,210,854,977 -- matches the source's own published
+      total exactly, verified programmatically, not by hand).
+    available_stratification: "Full state/UT table (35 entries)"
+    marginal_or_conditional: "marginal"
+    transformation: >-
+      Percentage share computed by dividing each state/UT's population by
+      the national total (source publishes raw counts, not pre-computed
+      shares; computed with a script, not by hand, to avoid arithmetic
+      error -- shares sum to 1.0 exactly).
+    limitations: >-
+      15-year-old data -- state population shares have shifted since 2011
+      (differentially, since growth rates vary by state), but no more
+      recent official census-quality state population table exists (the
+      2021 Census was not conducted). This is a population-representative
+      distribution (actual census counts), not a survey sample composition.
+      M2D-5 finding: this table uses 2011-vintage ADMINISTRATIVE
+      BOUNDARIES, which no longer match India's current map -- Telangana
+      (created 2014, carved from Andhra Pradesh) does not appear as a
+      separate entry; "Jammu and Kashmir" is listed as a single unit,
+      predating its 2019 reorganization into the J&K and Ladakh union
+      territories; "Daman and Diu" and "Dadra and Nagar Haveli" are listed
+      separately, predating their 2020 merger. This is a real, distinct
+      limitation from the population-share staleness above (a boundary
+      problem, not just a count problem) -- not fixed here, since doing so
+      correctly requires a current-boundary Census-quality table that
+      wasn't located; flagged for a future milestone.
+    evidence_tier: >-
+      A (observed, 2011 boundaries and counts); the general-vs-adult
+      population caveat noted for sex/urban_rural above also applies here.
+    distribution:
+      type: categorical
+      categories:
+        Uttar Pradesh: 0.165018
+        Maharashtra: 0.092806
+        Bihar: 0.085972
+        West Bengal: 0.075382
+        Andhra Pradesh: 0.069852
+        Madhya Pradesh: 0.059980
+        Tamil Nadu: 0.059584
+        Rajasthan: 0.056612
+        Karnataka: 0.050456
+        Gujarat: 0.049915
+        Orissa: 0.034665
+        Kerala: 0.027589
+        Jharkhand: 0.027244
+        Assam: 0.025772
+        Punjab: 0.022912
+        Chhattisgarh: 0.021097
+        Haryana: 0.020937
+        Delhi: 0.013865
+        Jammu and Kashmir: 0.010357
+        Uttarakhand: 0.008330
+        Himachal Pradesh: 0.005669
+        Tripura: 0.003034
+        Meghalaya: 0.002450
+        Manipur: 0.002358
+        Nagaland: 0.001634
+        Goa: 0.001205
+        Arunachal Pradesh: 0.001143
+        Puducherry: 0.001031
+        Mizoram: 0.000906
+        Chandigarh: 0.000872
+        Sikkim: 0.000504
+        Andaman and Nicobar Islands: 0.000314
+        Dadra and Nagar Haveli: 0.000284
+        Daman and Diu: 0.000201
+        Lakshadweep: 0.000053
+
+risk_factors:
+  bmi:
+    source: "ICMR-NNMS (National NCD Monitoring Survey) 2017-18"
+    year: 2017-2018
+    population: "Adults 18-69y, India"
+    geographic_scope: "National"
+    definition: >-
+      WHO-standard BMI cutoffs: overweight = BMI 25.0-29.9 kg/m^2,
+      obese = BMI >= 30.0 kg/m^2 (confirmed via a regional-estimates
+      companion paper, PMC9150326, since the national PLOS One paper's
+      fetched text did not itself restate the cutoff).
+    available_stratification: >-
+      National, by sex only (no national age-band table located): men
+      overweight 23.3%, obese 4.3%; women overweight 29.3%, obese 8.3%.
+      A REGIONAL (not national) age x sex breakdown also exists
+      (PMC9150326) but was NOT used here -- applying a region-scoped table
+      as if it were national would misrepresent the evidence.
+    marginal_or_conditional: "sex-conditional (2-way marginal: sex only, no age)"
+    transformation: >-
+      ENGINEERING APPROXIMATION: only categorical prevalence (%overweight,
+      %obese) is available, not a continuous BMI distribution. A
+      continuous BMI value is generated by (1) drawing a category
+      (normal-or-underweight / overweight / obese) from the sex-specific
+      category probabilities above, then (2) sampling uniformly within
+      that category's WHO-standard BMI range. This continuous value is
+      NOT itself observed evidence -- only the category membership
+      probabilities are.
+    limitations: >-
+      Not age-conditioned (no accessible national age-band table). No
+      underweight-specific prevalence was found, so "normal-or-underweight"
+      is treated as one combined category, sampled over [16.0, 24.9].
+      Within-category continuous sampling is uniform (no shape evidence
+      available) -- a documented simplification, not an observed
+      distribution shape. M2D-2 finding: NNMS's surveyed population is
+      adults 18-69, but this config applies its category probabilities to
+      the FULL 20-89 generator range -- patients aged 70-89 receive
+      probabilities extrapolated beyond what NNMS actually sampled. No
+      alternative source for that age slice was found; documented rather
+      than silently applied. M2D-2 audit conclusion: the category
+      assignment (evidence-backed) is KEPT as-is; the within-category
+      uniform sampling was considered for replacement with a peaked shape
+      but REJECTED -- we have no evidence for the interior shape, so a
+      peaked distribution would itself be an invented claim, not an
+      improvement. Uniform-within-category remains the least-assumption
+      choice given only a category boundary and its prevalence are known.
+    evidence_tier: >-
+      A (observed) for the sex-conditioned category probabilities; B
+      (engineering assumption) for extrapolating them across the full
+      20-89 range and for the within-category continuous sampling shape;
+      C (reconstructed distribution) for the resulting continuous BMI
+      value as a whole -- it is not directly observed data.
+    distribution:
+      type: category_then_uniform
+      categories_by_sex:
+        male: {normal_or_underweight: 0.724, overweight: 0.233, obese: 0.043}
+        female: {normal_or_underweight: 0.624, overweight: 0.293, obese: 0.083}
+      category_ranges:
+        normal_or_underweight: [16.0, 24.9]
+        overweight: [25.0, 29.9]
+        obese: [30.0, 40.0]
+
+  smoking_status:
+    source: "ICMR-NNMS (National NCD Monitoring Survey) 2017-18"
+    year: 2017-2018
+    population: "Adults 18-69y, India"
+    geographic_scope: "National"
+    definition: >-
+      "Current tobacco use (any)" -- combines smoked and smokeless
+      tobacco use, per NNMS's own headline category.
+    available_stratification: >-
+      National, by sex only: current tobacco use (any) -- men 51.2%
+      [48.3-54.1], women 13.0% [11.1-15.2]. A separate "daily smoked
+      tobacco" figure also exists (men 13.6%, women 0.7%) but was NOT
+      used -- it is a narrower category than our schema's "current"
+      value is meant to represent, and using it would understate
+      prevalence relative to what "current tobacco use" actually means
+      in the source.
+    marginal_or_conditional: "sex-conditional (2-way marginal: sex only, no age)"
+    transformation: >-
+      Schema's smoking_status supports never/former/current (see
+      schemas/patient_schema.py). NNMS does not report a usable
+      never-vs-former split for non-current users (the fork's research
+      found no confirmed "former smoker" percentage). Therefore ONLY
+      "current" and "never" are generated from evidence; "former" remains
+      a structurally valid schema value that is simply never produced
+      by this generator until a supporting source is found.
+    limitations: >-
+      Not age-conditioned. "Former" category not evidence-supported --
+      not fabricated. Smokeless-tobacco-specific national sex breakdown
+      was not separately located (only the combined "any tobacco" figure
+      above, and a national-only smokeless total of 24.7% with no sex
+      split, which was not usable and is not encoded here). M2D-3 finding:
+      same NNMS age-range mismatch as bmi above -- surveyed population is
+      18-69, applied to the full 20-89 generator range; patients 70-89 get
+      extrapolated probabilities. M2D-3 audit conclusion: the
+      current/never mapping was re-checked against the source figures and
+      confirmed correct (current = NNMS's "current tobacco use (any)"
+      headline figure, not the narrower "daily smoked" figure) --
+      no change made.
+    evidence_tier: >-
+      A (observed) for the sex-conditioned current/never probabilities; B
+      (engineering) for extrapolating across the full 20-89 range and for
+      treating "former" as simply unmodeled rather than estimated.
+    distribution:
+      type: categorical_by_sex
+      categories_by_sex:
+        male: {current: 0.512, never: 0.488}
+        female: {current: 0.130, never: 0.870}
+
+  hypertension:
+    source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023)"
+    year: 2023
+    population: "113,043 adults 20+, India (fieldwork 2008-2020, 5 phases)"
+    geographic_scope: "National (all 28 states, 2 UTs, NCT Delhi)"
+    definition: >-
+      Systolic BP >= 140 mmHg and/or diastolic BP >= 90 mmHg and/or use
+      of antihypertensive medication. This exact cutoff is CONFIRMED from
+      an earlier, related ICMR-INDIAB sub-study (Gupta R et al., J Hum
+      Hypertens, a 4-state/UT phase of the same study program) -- it is
+      NOT independently confirmed from INDIAB-17's own methods text
+      directly, since that paper was paywalled (HTTP 403) in this
+      research pass. Treated as a reasonable same-study-family inference,
+      not a directly-verified fact.
+    available_stratification: >-
+      National marginal only: 35.5% [33.8-37.3]. No accessible age-band or
+      sex-stratified table was found for the national INDIAB-17 estimate
+      (the paper's full tables are paywalled). A DIFFERENT, non-national,
+      smaller 4-state ICMR-INDIAB sub-study reports 26.3% age-standardized
+      -- NOT the same population, not blended into the figure below.
+    marginal_or_conditional: "marginal only"
+    transformation: "None -- reported directly"
+    limitations: >-
+      Not age- or sex-conditioned -- that data likely exists inside the
+      paywalled primary paper but could not be verified accessible in this
+      research pass. Generated as an unconditioned Bernoulli draw at the
+      national rate. M2D-4 audit conclusion: re-checked -- no age/sex/BMI
+      conditional relationship is available from any accessible source, so
+      the unconditioned marginal remains the CORRECT (not merely
+      convenient) reading of the evidence. No complexity added -- P(HTN |
+      age, sex) is a future modelling opportunity if the paper's tables
+      become accessible, not something to approximate now.
+    evidence_tier: "A (observed) for the marginal prevalence; no tier-A conditional evidence exists"
+    distribution:
+      type: bernoulli
+      p: 0.355
+
+  diabetes:
+    source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023)"
+    year: 2023
+    population: "113,043 adults 20+, India (fieldwork 2008-2020, 5 phases)"
+    geographic_scope: "National (all 28 states, 2 UTs, NCT Delhi)"
+    definition: >-
+      WHO (1999) criteria: fasting plasma glucose >= 126 mg/dL (7.0
+      mmol/L) OR 2-hour post-75g-OGTT plasma glucose >= 200 mg/dL (11.1
+      mmol/L) -- a clinical/lab-based criterion, not self-report.
+    available_stratification: >-
+      National marginal only: 11.4% [10.2-12.5]; prediabetes 15.3% (CI not
+      confirmed, and prediabetes is NOT generated here -- out of M2C's
+      strict scope). An unverified secondary claim of a 55-64 age-band
+      peak was found but could NOT be traced to a specific citable
+      source/table -- explicitly NOT used, per this project's
+      verify-don't-guess rule.
+    marginal_or_conditional: "marginal only"
+    transformation: "None -- reported directly"
+    limitations: >-
+      Not age- or sex-conditioned, same reason as hypertension above.
+      Generated as an unconditioned Bernoulli draw at the national rate.
+      M2D-4 audit conclusion: same as hypertension -- unconditioned
+      marginal confirmed as the correct reading of available evidence, not
+      changed.
+    evidence_tier: "A (observed) for the marginal prevalence; no tier-A conditional evidence exists"
+    distribution:
+      type: bernoulli
+      p: 0.114
+
+  hyperlipidemia:
+    source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023) -- headline dyslipidaemia figure, as cited in docs/INDIAN_DATA_SOURCES.md M2A"
+    year: 2023
+    population: >-
+      Sub-cohort of ICMR-INDIAB-17, ~25,647 of the ~113,043-person
+      national sample (dyslipidaemia was not measured on the full cohort)
+    geographic_scope: "National (sub-cohort)"
+    definition: "Dyslipidaemia (composite -- exact component-level cutoffs not independently re-verified in this pass for the INDIAB-17 sub-cohort specifically)"
+    available_stratification: >-
+      National marginal only, on the sub-cohort described above: 81.2%.
+      No age/sex-stratified table located for this figure. NOTE: a
+      DIFFERENT, earlier, smaller (n=2,042, 4-region-only) ICMR-INDIAB
+      dyslipidemia paper (PMC4016101) reports a non-identical 79% overall
+      figure with different component breakdowns (hypercholesterolemia
+      13.9%, hypertriglyceridemia 29.5%, low HDL-C 72.3%, high LDL-C
+      11.8%) and a QUALITATIVE (non-numeric) finding that women have
+      significantly higher rates than men (p<0.001) -- this alternate
+      figure and the qualitative sex-effect are documented here but
+      deliberately NOT blended into the value used, per this project's
+      "pick one source explicitly, don't average across non-identical
+      studies" rule.
+    marginal_or_conditional: "marginal only"
+    transformation: "None -- reported directly"
+    limitations: >-
+      Reduced-coverage sub-sample relative to the other INDIAB variables
+      above (~25,647 vs ~107-111k) -- carry this caveat wherever this
+      figure is cited. Not age- or sex-conditioned, despite good
+      qualitative (but non-numeric) evidence that a real sex effect
+      exists -- that qualitative finding is not usable as a quantitative
+      generation parameter without actual percentages. M2D-4 audit
+      conclusion: unconditioned marginal confirmed correct; the
+      reduced-coverage caveat was already prominent from M2C and is
+      reiterated here rather than downgraded.
+    evidence_tier: >-
+      A (observed) for the marginal prevalence on its sub-cohort; the
+      qualitative female>male finding from the OTHER (79%) paper is also
+      tier A as a directional fact, but tier E (future modelling
+      opportunity) as a quantitative input -- it has no attached numbers
+      usable here.
+    distribution:
+      type: bernoulli
+      p: 0.812
+
+  # M9 / D020 (2026-11-10): family history of diabetes and of CVD
+  # (heart disease or stroke) in first-degree relatives. Supersedes the
+  # former `family_history_cvd` null entry (D004). Two tiers:
+  #   ages 45+  -> LASI observed marginals, used directly (tier A).
+  #   ages 20-44 -> DERIVED: each parent's self-reported diagnosis drawn
+  #                 from LASI's age-band x sex prevalence for the parent's
+  #                 age, scaled by one calibration factor per condition
+  #                 fitted so the same model reproduces LASI's 45+ figure.
+  # Diabetes family history is then conditioned on the patient's own
+  # diabetes label via LASI's crude odds ratio, preserving the marginal.
+  family_history:
+    source: >-
+      LASI Wave 1 2017-18 (IIPS). Marginals: family history of diabetes
+      14.33% (PMC11005278, Table 1, n=8,822 of 58,612 weighted, 45+);
+      family history of CVD 11.61% (Ahmed, Dixit & Halli, Front.
+      Cardiovasc. Med. 2024, PMC11659756, Table 1, 45+). Parent-generation
+      prevalence: LASI Wave 1 India Report 2020, Table 7.5 (self-reported
+      diabetes) and Table 7.3 (self-reported heart disease, stroke), by
+      age 45-59 / 60+ and sex.
+    year: 2018
+    population: "Adults 45+ (LASI); applied to the 20-44 segment only through the parent-simulation model below"
+    geographic_scope: "National"
+    definition: >-
+      Self-reported diagnosis in father/mother/brother/sister (LASI).
+      CVD here = chronic heart disease or stroke, NOT hypertension (LASI's
+      report-level "CVDs" column includes hypertension and is not used).
+    available_stratification: "45+ marginal only for family history; age band x sex for parent-generation prevalence"
+    marginal_or_conditional: "marginal (CVD); conditional on patient diabetes (diabetes, via crude OR)"
+    transformation: >-
+      45+: Bernoulli(observed marginal). 20-44: P = 1-(1-k*p_mother)(1-
+      k*p_father), p_parent = LASI band rate at parent age (patient age +
+      gap below), k solved so that the 45+ case (both parents 60+)
+      reproduces the observed marginal. CVD heart/stroke combined as
+      1-(1-heart)(1-stroke) per band.
+    limitations: >-
+      No national source reports family history for ages 20-44 (searched
+      LASI, ICMR-INDIAB Phase I report, NNMS, NFHS-4/5, PURE, CARRS --
+      docs/Family_history_Strategy_plan.txt, D020). The 20-44 values are
+      model-derived, flagged per record (family_history.derivation).
+      Assumptions: (1) parental age gaps below are ENGINEERING values, not
+      sourced; (2) siblings ignored; (3) mother/father independent (no
+      spousal concordance); (4) k -- which absorbs era/recall/
+      underdiagnosis differences between the parents of 45+ respondents
+      and LASI's living 45-59/60+ population -- is assumed age-invariant;
+      (5) crude OR measured at 45+ assumed to hold at 20-44; (6) heart
+      disease and stroke combined assuming independence. Uncalibrated the
+      model gives 26.4% (diabetes) / 15.0% (CVD) at 45+ vs observed
+      14.33% / 11.61%, which is why k is required. Cross-check: CARRS
+      (urban Delhi/Chennai/Karachi, 20+, excluding people with their own
+      cardiometabolic disease; PMC9453056) reports 22.2% diabetes / 7.1%
+      heart disease + 1.9% stroke; the calibrated 20-44 output must stay
+      at or below that urban reference on average.
+    evidence_tier: "A (observed) for ages 45+; C (model-derived from tier-A inputs) for ages 20-44"
+    distribution:
+      observed_min_age: 45
+      observed_marginal:
+        diabetes: 0.1433
+        cardiovascular_disease: 0.1161
+      # [age 45-59, age 60+] self-reported prevalence, LASI report Tables 7.5 / 7.3
+      parent_rates_by_sex:
+        diabetes:
+          male: [0.102, 0.145]
+          female: [0.087, 0.139]
+        heart_disease:
+          male: [0.025, 0.058]
+          female: [0.021, 0.046]
+        stroke:
+          male: [0.017, 0.033]
+          female: [0.006, 0.022]
+      # ENGINEERING ASSUMPTION (not sourced): parent age = patient age + gap.
+      parent_age_gap_years:
+        mother: 25
+        father: 30
+      # LASI PMC11005278 Table 1: diabetes 27.8% with vs 9.2% without a
+      # family history -> crude OR = (0.278/0.722)/(0.092/0.908) = 3.80.
+      diabetes_crude_odds_ratio: 3.80
+
+  # M4B: lipid panel (TC, HDL, TG generated; LDL DERIVED via Friedewald,
+  # not independently drawn -- see docs/M4B_GENERATION_DESIGN.md A2 for
+  # the full reasoning, including the quantified independence-vs-actual
+  # composite-rate check that motivated this).
+  # D019 (2026-10-29): TC/HDL/TG triples that make the Friedewald LDL
+  # negative (TC < HDL + TG/5, ~2.28% of draws) are rejected and redrawn
+  # by generation/indian_population.py's sample_lipid_panel() -- the
+  # marginal distributions below are unchanged, only infeasible triples
+  # are excluded. See docs/DECISIONS.md D019.
+  lipid_panel:
+    total_cholesterol:
+      source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023)"
+      year: 2023
+      population: "Lipid sub-sample of ICMR-INDIAB-17, 18,492 of 113,043 adults 20+"
+      geographic_scope: "National"
+      definition: "NCEP/ATP III: total cholesterol >= 200 mg/dL = abnormal"
+      available_stratification: "National marginal only, no age/sex/urban-rural breakdown found"
+      marginal_or_conditional: "marginal only"
+      transformation: >-
+        ENGINEERING: category drawn from the marginal rate below, then a
+        continuous value sampled uniformly within that category's range
+        (same pattern as risk_factors.bmi). Category ranges are an
+        engineering choice (NCEP tier boundaries as guidance, not
+        evidence for the within-category shape).
+      limitations: "Not age/sex/urban-rural conditioned. Within-category shape is uniform, not observed."
+      evidence_tier: "A (observed) for the marginal rate; B (engineering) for the continuous within-category value"
+      distribution:
+        type: category_then_uniform
+        categories: {normal: 0.760, high: 0.240}
+        category_ranges:
+          normal: [100.0, 199.9]
+          high: [200.0, 320.0]
+
+    triglycerides:
+      source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023)"
+      year: 2023
+      population: "Lipid sub-sample of ICMR-INDIAB-17, 18,492 of 113,043 adults 20+"
+      geographic_scope: "National"
+      definition: "NCEP/ATP III: triglycerides >= 150 mg/dL = abnormal"
+      available_stratification: "National marginal only"
+      marginal_or_conditional: "marginal only"
+      transformation: >-
+        Same category_then_uniform engineering pattern as total_cholesterol.
+        Upper bound capped at 400 mg/dL, which also keeps generated values
+        within the range where the Friedewald equation (used for LDL,
+        below) remains considered reliable.
+      limitations: "Not age/sex/urban-rural conditioned. Within-category shape is uniform, not observed."
+      evidence_tier: "A (observed) for the marginal rate; B (engineering) for the continuous within-category value"
+      distribution:
+        type: category_then_uniform
+        categories: {normal: 0.679, high: 0.321}
+        category_ranges:
+          normal: [50.0, 149.9]
+          high: [150.0, 400.0]
+
+    hdl:
+      source: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023)"
+      year: 2023
+      population: "Lipid sub-sample of ICMR-INDIAB-17, 18,492 of 113,043 adults 20+"
+      geographic_scope: "National"
+      definition: "NCEP/ATP III: HDL < 40 mg/dL (men) / < 50 mg/dL (women) = low/abnormal (sex-specific cutoff, identical in the LAI definition too)"
+      available_stratification: >-
+        National marginal only (66.9%), POOLED across sexes -- the
+        cutoff itself is sex-specific but no sex-specific PREVALENCE
+        split was found. The same pooled rate is applied within each
+        sex's own cutoff-defined range (M4B-0 A1/A2 finding), not
+        itself evidenced.
+      marginal_or_conditional: "marginal only (pooled across sexes)"
+      transformation: >-
+        category_then_uniform, applied per-sex using the pooled 66.9%
+        rate within each sex's own clinically-defined "low" range.
+      limitations: "No sex-specific prevalence split evidenced -- pooled rate applied to both sexes as an engineering necessity."
+      evidence_tier: "A (observed) for the pooled marginal rate; B (engineering) for applying it per-sex and for the continuous within-category value"
+      distribution:
+        type: category_then_uniform_by_sex
+        categories_by_sex:
+          male: {low: 0.669, normal: 0.331}
+          female: {low: 0.669, normal: 0.331}
+        category_ranges_by_sex:
+          male: {low: [20.0, 39.9], normal: [40.0, 80.0]}
+          female: {low: [20.0, 49.9], normal: [50.0, 90.0]}
+
+    ldl:
+      source: "DERIVED, not independently sourced -- computed via the Friedewald equation (LDL = TC - HDL - TG/5, mg/dL), the same formula ICMR-INDIAB-17 itself used to compute LDL from directly-measured TC/HDL/TG (confirmed docs/M4-0A_DYSLIPIDEMIA_DECISION_BRIEF.md)."
+      year: null
+      population: null
+      geographic_scope: null
+      definition: "Friedewald equation; result clipped to [30, 300] mg/dL as an engineering safeguard against implausible arithmetic combinations"
+      available_stratification: "N/A -- derived, not sampled"
+      marginal_or_conditional: "N/A"
+      transformation: "LDL = total_cholesterol - hdl - (triglycerides / 5), clipped to [30, 300]"
+      limitations: >-
+        A real clinical formula, not an invented correlation -- but its
+        OWN cited marginal rate (LDL>=130: 20.9%) is not directly used as
+        a sampling input; the effective LDL>=130 rate this produces
+        should be checked empirically against 20.9% at each validation
+        scale (see docs/M4B_GENERATION_DESIGN.md A2/Known Limitations).
+      evidence_tier: "B (engineering) -- real formula, computed not sampled"
+      distribution:
+        type: derived
+        formula: "total_cholesterol - hdl - triglycerides / 5"
+        clip_range: [30.0, 300.0]
+
+  # Reference definitions used by generation/indian_population.py to
+  # COMPUTE (never sample) LipidInterpretation entries. Both already
+  # approved by docs/DECISIONS.md D011 -- neither is treated as more
+  # correct than the other (docs/M4-0A_DYSLIPIDEMIA_DECISION_BRIEF.md).
+  lipid_definitions:
+    NCEP_ATP_III:
+      source_citation: "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023) / NCEP ATP III"
+      total_cholesterol_threshold: 200.0
+      triglycerides_threshold: 150.0
+      hdl_threshold_male: 40.0
+      hdl_threshold_female: 50.0
+      ldl_threshold: 130.0
+    LAI_2020:
+      source_citation: "ICMR-INDIAB-25 (J Clin Lipidology, 2026) / Lipid Association of India"
+      total_cholesterol_threshold: 200.0
+      triglycerides_threshold: 150.0
+      hdl_threshold_male: 40.0
+      hdl_threshold_female: 50.0
+      ldl_threshold: 100.0
+
+  # M4B: HbA1c, conditional on the already-generated diabetes label
+  # (docs/DECISIONS.md D011's HbA1c reversed-direction finding) -- never
+  # used to derive diabetes status.
+  hba1c:
+    source: "ICMR-INDIAB-12 (Sridhar GR et al., Acta Diabetologica, 2022)"
+    year: 2022
+    population: "14,222 adults 20+ with confirmed NORMAL GLUCOSE TOLERANCE (NGT, i.e. non-diabetic), national"
+    geographic_scope: "National"
+    definition: "HbA1c (%), age-decade trend among NGT individuals only"
+    available_stratification: >-
+      Age-decade trend with genuine age x sex and age x urban/rural
+      conditional detail: 5.16+/-0.71% (20-29y) to 5.49+/-0.69% (70+y)
+      overall; female +0.10%/decade vs male +0.06%/decade; urban
+      +0.10%/decade vs rural +0.08%/decade.
+    marginal_or_conditional: "age x sex conditional (implemented); age x urban/rural conditional (evidenced but NOT implemented in M4B -- docs/M4B_GENERATION_DESIGN.md A4)"
+    transformation: >-
+      mean(age, sex) = 5.16 + sex_slope(sex) * (age - 25) / 10, where
+      sex_slope is female=0.10 or male=0.06 (both EVIDENCE, per-decade).
+      Reference age point 25 is ENGINEERING (midpoint of the reported
+      20-29y band). sd=0.70 is ENGINEERING (average of the two reported
+      SDs). Value clipped to [4.0, 6.4] -- ENGINEERING (physiological
+      floor; upper bound kept just below the standard international ADA
+      diabetic threshold of 6.5%, an internal-consistency safeguard, not
+      an India-verified cutoff).
+    limitations: >-
+      Only supported for NGT (non-diabetic) patients. Diabetic-population
+      HbA1c is NOT generated (docs/M4_CLINICAL_EVIDENCE.md found only
+      thin, non-representative 4-state data) -- labs stays null for
+      diabetic patients, same precedent as family_history (D004).
+      Urban/rural conditioning exists in the source but is not
+      implemented (see marginal_or_conditional above).
+    evidence_tier: "A (observed) for the age/sex trend; B (engineering) for the reference point, SD, and clip bounds"
+    distribution:
+      type: conditional_normal
+      baseline_mean_at_age_25: 5.16
+      sex_decade_slope: {male: 0.06, female: 0.10}
+      reference_age: 25
+      sd: 0.70
+      clip_range: [4.0, 6.4]
+      unit: "%"
+      not_generated_for: "diabetic patients (risk_factors.diabetes == true) -- insufficient evidence"
+
+
+  # ==== M8 (pilot 50) -- NEW: blood pressure =============================
+  # The first RAW/continuous cardiovascular measurement this project
+  # generates for the hypertension domain. Until M8, hypertension was
+  # label-only: docs/M4_CLINICAL_ARCHITECTURE.md section 1 recorded "BP
+  # continuous distribution NEVER RESEARCHED -- NOT SUPPORTED", and
+  # docs/DECISIONS.md D011 explicitly carved hypertension out of its
+  # raw-primary architecture on that basis. M8's research pass located
+  # the missing evidence; see docs/M8_BP_ANTHROPOMETRY_EVIDENCE.md.
+  #
+  # ARCHITECTURE NOTE -- this is the REVERSED direction (label -> value),
+  # the same shape D011 approved for HbA1c, NOT the lipid pattern (value
+  # -> label). The hypertension label is already this project's
+  # evidence-primary variable (INDIAB-17 national marginal). BP is
+  # generated CONDITIONAL on that label, using the label's OWN published
+  # definition as the conditioning boundary. BP is therefore never used
+  # to re-derive hypertension, and no new hypertension prevalence is
+  # introduced.
+  blood_pressure:
+    source: >-
+      Mean SBP/DBP by age band and sex: "Hypertension screening across
+      different age groups in Indian adults: Evidence from nationally
+      representative cross-sectional data", PLOS ONE 2025,
+      doi:10.1371/journal.pone.0332226 (PMC12571314), analysing NFHS-5.
+      Independent SD cross-check: "Pestilent relationship between
+      smoking and hypertension or pulse pressure among males over 15
+      years in India: NFHS-5 Survey" (PMC11068163), Table 1.
+    year: "NFHS-5 fieldwork 2019-21; PLOS ONE paper published 2025"
+    population: >-
+      101,839 men and 724,115 women aged 15+, India. Measured (not
+      self-reported) BP: NFHS-5 took three readings per respondent with
+      a 5-minute interval using an Omron monitor.
+    geographic_scope: "National (all states/UTs)"
+    definition: >-
+      Measured office systolic and diastolic blood pressure in mmHg.
+      The CONDITIONING boundary used below is the hypertension label's
+      own published definition, already recorded under
+      risk_factors.hypertension: SBP >= 140 mmHg and/or DBP >= 90 mmHg
+      and/or current use of antihypertensive medication.
+    available_stratification: >-
+      Five-year age bands x sex (men 15-19 .. 50-54; women 15-19 ..
+      45-49 -- NFHS-5's women's questionnaire stops at 49 and the men's
+      at 54), each with a mean, a 95% CI and a per-band sample size.
+      This is the FIRST age-conditioned cardiovascular evidence this
+      project has located at national scope (M2D concluded no
+      age-stratified INDIAB table was accessible -- that remains true;
+      this is a different survey, NFHS-5, not INDIAB, and is used only
+      for BP, never blended into INDIAB's prevalence figures).
+    marginal_or_conditional: >-
+      age-band x sex conditional for the mean and SD; additionally
+      conditioned on the already-generated risk_factors.hypertension
+      label and on medications (antihypertensive present or not) via
+      the truncation rule below.
+    transformation: >-
+      (1) SD DERIVED ARITHMETICALLY, not read off: the source reports
+      mean + 95% CI + per-band n, so SD = (CI_upper - CI_lower) / (2 *
+      1.96) * sqrt(n). (2) VALIDATED: recombining the derived per-band
+      SDs into a total SD (pooled within-band variance + between-band
+      variance of the means) gives male SBP 13.69 / DBP 10.24 mmHg,
+      against the independently published NFHS-5 male overall figures
+      of 13.8 / 10.2 mmHg (PMC11068163) -- agreement to 0.8% and 0.4%.
+      That external agreement is the evidence that the CI-to-SD
+      derivation is sound. (3) Within a band, (SBP, DBP) is drawn
+      JOINTLY from a bivariate normal with the derived correlation
+      r=0.7255 (sbp_dbp_correlation below), evaluated on the integer
+      mmHg grid (sampling_method: joint_integer_grid_pmf); cells
+      outside the hypertension label's region (label_conditioning),
+      violating SBP > DBP, or below the pulse-pressure floor are zeroed
+      and the remainder renormalised. (4) SBP > DBP is enforced by
+      construction as a definitional constraint. (5) Values are whole
+      mmHg by construction. [M9-1 correction 2026-10-29: steps (3)/(4)
+      previously described the superseded first M8 implementation --
+      independent truncated normals, DBP drawn first. Prose only; no
+      parameter changed, generation output unaffected.]
+    limitations: >-
+      (a) AGE COVERAGE: the source covers men to 54 and women to 49;
+      this project generates ages 20-89. Patients above the source's
+      coverage receive the OLDEST AVAILABLE BAND's mean and SD held
+      CONSTANT -- deliberately the conservative choice, because BP is
+      known to keep rising with age, so holding the last band constant
+      UNDERSTATES BP in older patients rather than inventing a
+      continuing trend. Roughly half of this project's uniform 20-89
+      age range falls outside source coverage, so this is a material
+      limitation, not a rounding detail. Each generated record carries
+      extrapolated_beyond_source_age_range and age_band_source so the
+      affected patients are machine-filterable rather than only
+      described in prose. Closing this gap requires an older-adult
+      source: LASI Wave 1 (45+, 2017-18) is the specific candidate and
+      does measure BP, but no age-banded mean+SD table from it was
+      verified in this pass.
+      (b) SBP/DBP CORRELATION: modelled, r=0.7255, DERIVED from NFHS-5
+      men's SD(SBP)/SD(DBP)/SD(PP) (see sbp_dbp_correlation below);
+      applied to women and to every age band as an engineering
+      assumption. [M9-1 correction 2026-10-29: this item previously
+      said the correlation was NOT modelled -- true of the first M8
+      implementation only, superseded before the v0.8 freeze.]
+      (c) THE GENERATED BP MARGINAL IS NOT NFHS-5's MARGINAL. Because
+      BP is truncated to agree with the hypertension label, and that
+      label's prevalence (35.5%, INDIAB-17) is higher than the
+      raised-BP fraction NFHS-5's own distribution implies (~20-22%),
+      the resulting population BP distribution is NFHS-5's per-band
+      SHAPE re-weighted to be internally consistent with INDIAB-17's
+      prevalence. It must NOT be validated against, or described as,
+      NFHS-5's observed BP distribution. This is the direct, unavoidable
+      cost of the two sources disagreeing, and it is the reason the
+      label (not the measurement) remains primary.
+      (d) Office BP from a single survey visit is not a diagnosis;
+      three readings at one sitting is NFHS-5's protocol, not the
+      repeat-visit confirmation clinical diagnosis requires.
+      (e) NFHS-5 is a DIFFERENT survey from ICMR-INDIAB-17 (which
+      supplies the hypertension label) and from ICMR-NNMS (which
+      supplies the treatment rate). Three sources, three populations --
+      used for three separate components, never averaged together. Same
+      documented pattern as Census/NNMS/INDIAB elsewhere in this file
+      (see population.target_population_ambiguity_M2D6).
+    evidence_tier: >-
+      A (observed) for the per-band mean SBP/DBP by sex; B
+      (derived-from-source-backed, externally validated) for the
+      per-band SDs; B (engineering) for holding the last band constant
+      above source age coverage, for within-band normality, and for
+      applying the male-derived SBP/DBP correlation to women and all
+      age bands (M9-1 wording fix: previously said "SBP/DBP
+      independence"); C (reconstructed) for the resulting
+      per-patient BP pair as a whole -- it is not observed data.
+    distribution:
+      type: truncated_normal_by_age_band_and_sex
+      unit: "mmHg"
+      round_to_integer: true
+      # Outer physiological bounds -- a hard sanity clamp, NOT a
+      # clinical threshold and NOT a shaping device. With the joint
+      # integer-grid sampler below, these also define the support.
+      sbp_bounds: [70, 260]
+      dbp_bounds: [40, 160]
+      # SBP/DBP correlation -- DERIVED, not assumed, and not taken from
+      # general medical knowledge. PMC11068163 (NFHS-5 men) reports all
+      # three of SD(SBP)=13.8, SD(DBP)=10.2 and SD(pulse pressure)=9.5
+      # in the same Table 1. Since PP = SBP - DBP,
+      #   Var(PP) = Var(S) + Var(D) - 2*r*SD(S)*SD(D)
+      # which solves exactly for r:
+      #   r = (190.44 + 104.04 - 90.25) / (2*13.8*10.2) = 0.7255
+      # Two independent corroborations: (i) 0.73 sits squarely inside
+      # the 0.6-0.75 range adult populations are generally observed at,
+      # and (ii) that paper's published PP MEAN of 42.9 mmHg agrees to
+      # ~2% with the 42.13 mmHg implied by this config's own age-band
+      # grand means (122.04 - 79.91), which came from a DIFFERENT paper.
+      #
+      # WHY THIS MATTERS, measured: sampling SBP and DBP independently
+      # (M8's first implementation) produced pulse pressure < 20 mmHg in
+      # 10.7% of records -- clinically absurd, and a defect that would
+      # have failed external clinical review. Modelling the derived
+      # correlation is what fixes it. Independence was NOT a harmless
+      # simplification here.
+      sbp_dbp_correlation:
+        value: 0.7255
+        derived_from:
+          source: "PMC11068163 Table 1 (NFHS-5, 88,807-92,805 men, aged 15+)"
+          sd_sbp: 13.8
+          sd_dbp: 10.2
+          sd_pulse_pressure: 9.5
+          formula: "r = (sd_sbp^2 + sd_dbp^2 - sd_pp^2) / (2*sd_sbp*sd_dbp)"
+        limitations: >-
+          The source paper analyses NFHS-5's MEN's questionnaire only,
+          so this r is observed for Indian adult males and applied to
+          females as an engineering assumption. That is a weaker claim
+          than it looks: correlation structure is far more stable across
+          sexes than means are, and no sex-specific Indian figure
+          exists. It is also a single whole-population r, not
+          age-band-specific -- no age-stratified pulse-pressure SD was
+          located.
+        evidence_tier: >-
+          B (derived-from-source-backed) for males; B (engineering) for
+          applying it to females and across all age bands
+      # Narrow-pulse-pressure floor -- an EXPLICIT ENGINEERING
+      # ASSUMPTION, declared as one, and the only shaping parameter in
+      # this whole block that is not read off or derived from a source.
+      #
+      # WHY IT EXISTS, with the measurements that forced it. A Gaussian
+      # copula reproduces the centre of the joint BP distribution well
+      # but not its corners, and the label truncation adds corners of
+      # its own (e.g. isolated diastolic hypertension, where DBP>=90 is
+      # paired with SBP<140). Measured over 20,000 draws:
+      #   SBP/DBP independent                -> PP < 20 mmHg in 10.70%
+      #   + derived correlation r=0.7255     -> PP < 20 mmHg in  1.98%
+      #   + this floor                       -> PP < 20 mmHg in  0%
+      # A pulse pressure under 20 mmHg at these absolute BP levels is
+      # not a general-population finding -- it indicates cardiogenic
+      # shock or severe aortic stenosis -- so leaving 2% of records
+      # there would have shipped a known clinical absurdity.
+      #
+      # WHY 20, and why only a FLOOR. 20 mmHg sits ~2.4 SD below the
+      # published Indian mean pulse pressure (42.9 +/- 9.5 mmHg,
+      # PMC11068163), so it excludes a region the source's own
+      # distribution already places under 1% of the population; it is
+      # also the conventional clinical boundary for a narrow pulse
+      # pressure. Deliberately asymmetric: NO upper cap is applied,
+      # because a wide pulse pressure (80-100 mmHg) is genuinely
+      # expected in older hypertensive patients and capping it would
+      # delete real signal. The exact value remains a judgement, not a
+      # measurement -- both the with- and without-floor distributions
+      # are reported in the pilot's data-quality summary so a reviewer
+      # can see precisely what it changed.
+      min_pulse_pressure_mm_hg: 20
+      min_pulse_pressure_evidence_tier: >-
+        B (explicit engineering assumption) -- anchored to the published
+        PP mean/SD above but not itself a reported figure
+      # Sampling method: the joint distribution is evaluated on the
+      # INTEGER mmHg grid defined by sbp_bounds x dbp_bounds, cells
+      # violating the label region or SBP > DBP are zeroed, and one cell
+      # is drawn from the renormalised result. Chosen over truncated
+      # marginals or rejection sampling because it is exact for every
+      # region through ONE code path, has no retry/bail-out (hence no
+      # silent bias in the thin tails young patients fall into), makes
+      # whole-mmHg rounding intrinsic rather than a post-step that can
+      # push a value back across the threshold, and is cacheable per
+      # (sex, age band, region) -- 45 distinct distributions in total.
+      sampling_method: joint_integer_grid_pmf
+      label_conditioning:
+        rule_source: >-
+          risk_factors.hypertension.definition (ICMR-INDIAB-17 / NNMS):
+          SBP>=140 and/or DBP>=90 and/or on antihypertensive medication
+        sbp_threshold: 140
+        dbp_threshold: 90
+        # hypertension == false -> the label can only be false if BOTH
+        # measurements are below threshold AND no medication is taken
+        # (medication is never generated without the diagnosis, so the
+        # medication arm cannot fire here).
+        normotensive: "require sbp < 140 AND dbp < 90"
+        # hypertension == true, no antihypertensive medication generated
+        # -> the ONLY way the published definition can be satisfied is a
+        # measurement at or above threshold.
+        hypertensive_untreated: "require sbp >= 140 OR dbp >= 90"
+        # hypertension == true, antihypertensive medication generated ->
+        # the definition is already satisfied by medication use, so the
+        # measurement is UNCONSTRAINED: a treated patient may be
+        # controlled or uncontrolled. Deliberately NOT forced high --
+        # forcing it would be exactly the "invent a measurement that
+        # confirms the label" error this design avoids.
+        hypertensive_treated: "unconstrained"
+      # [age_low_inclusive, age_high_inclusive, mean_sbp, sd_sbp,
+      # mean_dbp, sd_dbp]. The 15-19 band is retained for fidelity to
+      # the source but is never reached (generator range starts at 20).
+      age_bands_by_sex:
+        male:
+          - [15, 19, 115.09, 11.30, 72.86, 8.86]
+          - [20, 24, 119.14, 11.11, 76.53, 8.83]
+          - [25, 29, 120.68, 11.08, 79.04, 8.53]
+          - [30, 34, 122.63, 11.81, 81.00, 9.06]
+          - [35, 39, 123.55, 12.94, 82.25, 9.63]
+          - [40, 44, 124.96, 14.80, 83.52, 10.28]
+          - [45, 49, 126.79, 16.12, 84.10, 10.49]
+          - [50, 54, 128.67, 16.60, 84.57, 10.46]
+        female:
+          - [15, 19, 109.47, 11.09, 72.34, 8.53]
+          - [20, 24, 110.66, 11.00, 73.99, 8.46]
+          - [25, 29, 112.42, 11.77, 75.84, 8.41]
+          - [30, 34, 115.09, 12.48, 77.93, 8.58]
+          - [35, 39, 117.86, 13.85, 79.68, 10.00]
+          - [40, 44, 121.43, 14.83, 81.25, 9.89]
+          - [45, 49, 124.71, 17.29, 82.27, 10.08]
+      source_age_coverage_max_by_sex: {male: 54, female: 49}
+      beyond_coverage_rule: >-
+        hold the oldest available band's mean and SD constant
+        (documented engineering extrapolation -- see limitations (a))
+      source_reported_means_and_cis:
+        note: >-
+          The source reports mean + 95% CI + n; the SDs above were
+          derived from those. Raw figures retained here so the
+          derivation is re-checkable without refetching the paper.
+        columns: >-
+          [age_low, age_high, n, mean_sbp, sbp_ci_low, sbp_ci_high,
+          mean_dbp, dbp_ci_low, dbp_ci_high]
+        male:
+          - [15, 19, 14337, 115.09, 114.91, 115.28, 72.86, 72.72, 73.01]
+          - [20, 24, 12473, 119.14, 118.95, 119.34, 76.53, 76.37, 76.68]
+          - [25, 29, 12410, 120.68, 120.49, 120.88, 79.04, 78.89, 79.19]
+          - [30, 34, 11592, 122.63, 122.41, 122.84, 81.00, 80.84, 81.17]
+          - [35, 39, 11641, 123.55, 123.31, 123.78, 82.25, 82.08, 82.43]
+          - [40, 44, 9667, 124.96, 124.66, 125.25, 83.52, 83.31, 83.72]
+          - [45, 49, 10058, 126.79, 126.47, 127.10, 84.10, 83.89, 84.30]
+          - [50, 54, 7947, 128.67, 128.30, 129.03, 84.57, 84.34, 84.80]
+        female:
+          - [15, 19, 111820, 109.47, 109.40, 109.53, 72.34, 72.29, 72.39]
+          - [20, 24, 109961, 110.66, 110.59, 110.72, 73.99, 73.94, 74.04]
+          - [25, 29, 108578, 112.42, 112.35, 112.49, 75.84, 75.79, 75.89]
+          - [30, 34, 93505, 115.09, 115.01, 115.17, 77.93, 77.87, 77.98]
+          - [35, 39, 90926, 117.86, 117.77, 117.95, 79.68, 79.62, 79.75]
+          - [40, 44, 76627, 121.43, 121.32, 121.53, 81.25, 81.18, 81.32]
+          - [45, 49, 79726, 124.71, 124.59, 124.83, 82.27, 82.20, 82.34]
+
+  # ==== M8 (pilot 50) -- height/weight: still NOT SUPPORTED =============
+  # Deliberately NOT a distribution. Kept here so the gap and the exact
+  # missing quantity are recorded where every other parameter's evidence
+  # lives, rather than only in a report.
+  anthropometrics_height_weight:
+    status: "NOT SUPPORTED -- deferred, no values generated"
+    what_is_missing: >-
+      A national mean AND standard deviation of adult height in cm, by
+      sex, for Indian adults. The mean alone is insufficient: without a
+      dispersion figure, any generated height distribution would have an
+      invented shape -- the identical objection this project already
+      used (and accepted) to REJECT a peaked within-category BMI
+      distribution (see risk_factors.bmi.limitations, M2D-2).
+    searched_and_not_found: >-
+      M4-0 recorded 3 failed access attempts. M8 added 3 more research
+      passes. (1) NFHS-5-based adult-height literature: PLOS ONE
+      doi:10.1371/journal.pone.0255676 reports only round-to-round
+      CHANGES in mean height (e.g. men 26-50 declined 0.86 cm between
+      NFHS-III and NFHS-IV), not an absolute mean with SD. (2) Deaton's
+      distribution-of-adult-heights analysis (PMC2630164) reports
+      STATE-level means at age 20 from NFHS-3 (men 157.2-168.6 cm,
+      women 149.1-154.9 cm) and explicitly reports no all-India mean
+      and no all-India SD -- it uses a regression standard error as its
+      dispersion measure instead. (3) An ICMR-focused pass surfaced only
+      the ICMR-NIN 2020 "Reference Indian Adult Man/Woman" (65 kg /
+      1.77 m; 55 kg / 1.62 m) -- an IDEALISED reference individual, not
+      a population distribution, and whose 1.77 m is plainly
+      inconsistent with the ~165 cm national male mean, so it must not
+      be used as one. Secondary summaries put the NFHS-5 means near
+      165 cm (men) and 152 cm (women), consistent with Deaton's state
+      ranges, but no primary table carrying BOTH the mean and the SD
+      was verified in this pass.
+    why_not_generated: >-
+      BMI is already this project's evidence-primary anthropometric
+      variable (docs/M4_CLINICAL_ARCHITECTURE.md section 1, M4-0's
+      resolved recommendation). Generating height from an invented
+      dispersion and back-solving weight = bmi * (height/100)^2 would
+      leave BMI exactly correct while making height and weight
+      model-generated values dressed as measurements. Deferred instead.
+    concrete_recommendation: >-
+      Two routes, in preference order. (1) Obtain a primary mean+SD: the
+      DHS/NFHS-5 recode files, or the NFHS-5 India Report (FR375)
+      anthropometry tables, are the direct source; one verified
+      mean+SD-by-sex table unblocks this immediately. (2) If only
+      Deaton's verified STATE-level means are obtainable, a national
+      mean can be assembled from them using this config's OWN
+      Census-2011 state distribution (demographics.state) as weights --
+      fully traceable, no new assumption beyond the weighting -- but
+      that still yields no SD, so route (1) remains necessary. Once a
+      mean+SD exists: sample height ~ N(mean_sex, sd_sex), derive
+      weight = bmi * (height/100)^2, leave BMI untouched, and validate
+      the BMI arithmetic to within rounding. Implementation hook is
+      already present and tested as a no-op:
+      generation.indian_population.sample_height_cm().
+    evidence_tier: "E (unavailable)"
+
+# M4E, docs/DECISIONS.md D016. Treatment-rate evidence per diagnosed
+# condition, not per pharmacological subclass -- no drug-class-share or
+# drug-name distribution exists anywhere researched (docs/
+# M4E_MEDICATION_EVIDENCE.md). Statin/antiplatelet treatment rates:
+# NOT SUPPORTED at population level -- not represented here at all.
+medications:
+  antihypertensive_treatment_rate:
+    source: "ICMR-NNMS 2017-18 hypertension care cascade, PMC10156594"
+    year: "2017-18 fieldwork"
+    population: >-
+      National, 300 rural/300 urban clusters, n=3,017 hypertensive of
+      10,593 measured, ages 18-69 (same NNMS survey already used for
+      risk_factors.hypertension/bmi/smoking_status)
+    geographic_scope: "National"
+    definition: >-
+      Fraction of diagnosed hypertensive adults currently on
+      antihypertensive treatment (point-prevalence at survey time),
+      among all hypertensives (aware + unaware) -- 14.5% (95% CI
+      12.7-16.5).
+    available_stratification: >-
+      National marginal (14.5%) used here. A sex-stratified split
+      exists in the same source (male 10.9%, female 18.8%) but is
+      deliberately NOT used -- risk_factors.hypertension itself is
+      generated as a sex-unconditioned national marginal (M2D, confirmed
+      correct), so conditioning only the downstream treatment rate on
+      sex while the diagnosis it depends on remains sex-unconditioned
+      would introduce an inconsistent asymmetry not present anywhere
+      else in this project. Documented in docs/M4E_MEDICATION_EVIDENCE.md,
+      not adopted.
+    marginal_or_conditional: "marginal, conditioned only on diagnoses containing code=hypertension"
+    transformation: "none -- direct Bernoulli(p)"
+    limitations: >-
+      Cross-sectional point-prevalence of "currently treated" -- does
+      not itself imply duration, adherence, or which specific drug
+      class. Ages 18-69 sampled (narrower than this project's 20-89
+      scope) -- the same extrapolation gap already accepted for
+      BMI/smoking (D008).
+    evidence_tier: "A (observed)"
+    distribution:
+      type: bernoulli
+      p: 0.145
+  antidiabetic_treatment_rate:
+    source: "ICMR-NNMS 2017-18 diabetes care cascade, PMC8964146"
+    year: "2017-18 fieldwork"
+    population: >-
+      National, same survey design, n=904 diabetic of 9,721 surveyed,
+      ages 18-69
+    geographic_scope: "National"
+    definition: >-
+      Fraction of diagnosed diabetic adults currently on antidiabetic
+      treatment (point-prevalence at survey time), among all diabetics
+      (aware + unaware) -- 36.1%.
+    available_stratification: >-
+      National marginal (36.1%) used here. A sex split of the
+      treatment-given-aware sub-rate exists (male 82.6%, female 74.5%)
+      but is a different, conditional quantity (requires an "aware"
+      variable this project does not generate) -- not used, same
+      reasoning as the hypertension entry above.
+    marginal_or_conditional: "marginal, conditioned only on diagnoses containing code=diabetes"
+    transformation: "none -- direct Bernoulli(p)"
+    limitations: >-
+      Same point-prevalence caveat as antihypertensive_treatment_rate.
+      Ages 18-69 sampled.
+    evidence_tier: "A (observed)"
+    distribution:
+      type: bernoulli
+      p: 0.361
+
+# D021 (2026-11-10): ambient air quality. A deterministic LOOKUP by
+# demographics.state -- an observed fact about a place and year, never
+# sampled. Plan: docs/Further_Steps_for_patient-Record_complete.txt §3.
+environment:
+  air_quality:
+    source: >-
+      CPCB Continuous Ambient Air Quality Monitoring Stations (CAAQMS),
+      hourly station-level AQI from the CPCB AQI Repository, as
+      republished by github.com/Vonter/india-cpcb-aqi (ODbL-1.0,
+      attribution required; some contents (c) CPCB), file
+      data/cpcb-aqi.parquet at commit 954db3ae9d526f17479f7a7f069ab56ad0a25cf8.
+    year: 2023
+    population: "Monitoring stations, not people -- 448 of 519 stations with >=50% of 2023's hours reporting"
+    geographic_scope: "State/UT (Census 2011 boundaries)"
+    definition: >-
+      India National AQI (CPCB scale, 0-500), NOT the US EPA scale.
+      Value = 2023 mean of hourly station AQI, averaged within each city
+      first, then equally across a state's cities (so one heavily
+      monitored metro does not dominate its state). Category from CPCB
+      breakpoints: Good <=50, Satisfactory <=100, Moderate <=200, Poor
+      <=300, Very Poor <=400, Severe >400.
+    available_stratification: "Station/city; collapsed to state because the schema has no city/district field"
+    marginal_or_conditional: "deterministic lookup by state"
+    transformation: >-
+      Station mean over 2023 hourly values -> city mean -> state mean.
+      Census-2011 boundary mapping: Telangana stations pooled into
+      "Andhra Pradesh" (undivided in 2011); "Odisha" mapped to "Orissa".
+    limitations: >-
+      (1) URBAN-BIASED: CPCB stations sit almost entirely in cities, so
+      the state value is applied unadjusted to rural patients -- flagged
+      on every record (air_quality.monitoring_bias). (2) State-level
+      only; no within-state variation. (3) Mean of hourly AQI, not
+      CPCB's official daily AQI: Delhi computes to 212.3 against the
+      official 2023 daily-average AQI of 204 (CAQM, from CPCB data),
+      about +4%. (4) Nine states/UTs (sum ~3.4% of the population) have
+      no station with adequate 2023 coverage -> aqi null with a stated
+      reason; no neighbour-state value is borrowed. (5) Several states
+      rest on 1 station (count stored per record). (6) One reference
+      year, not a lifetime exposure history.
+    evidence_tier: "A (observed) for monitored cities; B (engineering) for the state aggregation and its application to rural patients"
+    reference_year: 2023
+    category_breakpoints:  # upper bound inclusive, CPCB National AQI
+      Good: 50
+      Satisfactory: 100
+      Moderate: 200
+      Poor: 300
+      Very Poor: 400
+      Severe: 500
+    by_state:
+      "Andhra Pradesh": {aqi: 83.0, cities: 9, stations: 22}
+      "Arunachal Pradesh": {aqi: 41.4, cities: 1, stations: 1}
+      "Assam": {aqi: 118.3, cities: 6, stations: 9}
+      "Bihar": {aqi: 162.1, cities: 19, stations: 29}
+      "Chandigarh": {aqi: 136.9, cities: 1, stations: 3}
+      "Chhattisgarh": {aqi: 77.1, cities: 8, stations: 12}
+      "Delhi": {aqi: 212.3, cities: 1, stations: 37}
+      "Gujarat": {aqi: 123.4, cities: 6, stations: 15}
+      "Haryana": {aqi: 143.1, cities: 22, stations: 63}
+      "Himachal Pradesh": {aqi: 150.2, cities: 1, stations: 1}
+      "Jammu and Kashmir": {aqi: 70.2, cities: 1, stations: 1}
+      "Karnataka": {aqi: 67.4, cities: 21, stations: 35}
+      "Kerala": {aqi: 75.0, cities: 6, stations: 7}
+      "Madhya Pradesh": {aqi: 109.6, cities: 13, stations: 19}
+      "Maharashtra": {aqi: 101.2, cities: 18, stations: 55}
+      "Meghalaya": {aqi: 65.6, cities: 1, stations: 1}
+      "Mizoram": {aqi: 48.8, cities: 1, stations: 1}
+      "Orissa": {aqi: 121.4, cities: 10, stations: 12}
+      "Punjab": {aqi: 124.3, cities: 8, stations: 8}
+      "Rajasthan": {aqi: 133.4, cities: 24, stations: 33}
+      "Sikkim": {aqi: 60.3, cities: 1, stations: 1}
+      "Tamil Nadu": {aqi: 63.3, cities: 13, stations: 21}
+      "Tripura": {aqi: 162.8, cities: 1, stations: 1}
+      "Uttar Pradesh": {aqi: 129.5, cities: 18, stations: 46}
+      "Uttarakhand": {aqi: 96.9, cities: 2, stations: 2}
+      "West Bengal": {aqi: 105.5, cities: 5, stations: 13}
+    unavailable:
+      "Andaman and Nicobar Islands": "no CPCB continuous monitoring station in the source for 2023"
+      "Dadra and Nagar Haveli": "no CPCB continuous monitoring station in the source for 2023"
+      "Daman and Diu": "no CPCB continuous monitoring station in the source for 2023"
+      "Goa": "no CPCB continuous monitoring station in the source for 2023"
+      "Jharkhand": "3 station(s) in the source, none with >=50% hourly coverage in 2023"
+      "Lakshadweep": "no CPCB continuous monitoring station in the source for 2023"
+      "Manipur": "2 station(s) in the source, none with >=50% hourly coverage in 2023"
+      "Nagaland": "no CPCB continuous monitoring station in the source for 2023"
+      "Puducherry": "no CPCB continuous monitoring station in the source for 2023"
