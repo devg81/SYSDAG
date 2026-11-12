@@ -1292,6 +1292,14 @@ parameter count.
 
 # Last Updated
 
+2026-11-12 — Pre-ECG patient layer CONFIRMED COMPLETE: D019 + D020 + D021
+are all in the frozen v0.9 dataset (`outputs/m9/100k_patients_v09/`,
+100,000 records, 0 errors, checksum `53fcae20…d1e`, generated 2026-11-10).
+Re-verified today: 100,000 files on disk, 174/174 tests in `tests/` pass.
+`validation/pilot_50_records/` tests (5) fail because that pilot is still v0.8;
+it is a stale side artifact, not a dataset defect. Next action: the ECG
+discussion (weights licence + M6 model decision).
+
 2026-10-30 — M9 (in progress): full-scale field-completeness audit run
 for the first time (0 defects found); D019 lipid-sampling reject-and-
 redraw fix implemented and verified (not yet applied to the frozen
