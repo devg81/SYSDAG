@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from schemas.patient_schema import DIAGNOSIS_CODES, Patient
-from generation.indian_population import derive_lipid_interpretations
+from generation.indian_population import derive_lai_risk, derive_lipid_interpretations
 from generation.clinical_history import (
     derive_diagnoses,
     derive_medical_history,
@@ -243,6 +243,38 @@ def validate_clinical_consistency(
                 f"risk_factors.hyperlipidemia={flag} does not match "
                 f"lipid_interpretations[{definition}].dyslipidemia={match.dyslipidemia} (D023)"
             )
+
+    # --- LAI risk tier (hard rule, D024 v0.12; -jatin) ---
+    # Recompute the rule-based tier from the record's own fields. Only the
+    # LAI_2020 entry may carry it; every other definition must leave it None.
+    checks.append("lai_risk_tier_consistency")
+    risk_keys = ("risk_category", "ldl_goal_mg_dl", "ldl_above_goal", "risk_factors_counted", "risk_derivation")
+    for interp in interps or []:
+        if interp.definition != "LAI_2020" and any(getattr(interp, k) is not None for k in risk_keys):
+            errors.append(f"lipid_interpretations[{interp.definition}]: risk tier fields set on a non-LAI definition")
+    lai = next((i for i in interps or [] if i.definition == "LAI_2020"), None)
+    rf = patient.risk_factors
+    if indian_config is None:
+        warnings.append("lai_risk_tier_consistency check skipped: indian_config not supplied")
+    elif lai is not None and lai.risk_category is not None:
+        if lp is None or rf is None or patient.demographics.age is None:
+            errors.append("lipid_interpretations[LAI_2020]: risk tier present but its inputs are missing")
+        else:
+            expected = derive_lai_risk(
+                indian_config,
+                patient.demographics.age,
+                patient.demographics.sex,
+                rf.smoking_status,
+                rf.hypertension,
+                rf.diabetes,
+                {"hdl_mg_dl": lp.hdl_mg_dl, "ldl_mg_dl": lp.ldl_mg_dl},
+            )
+            for k in risk_keys:
+                if getattr(lai, k) != expected[k]:
+                    errors.append(
+                        f"lipid_interpretations[LAI_2020].{k}={getattr(lai, k)!r} does not match "
+                        f"recomputation {expected[k]!r} (D024)"
+                    )
 
     # --- Clinical timeline / labs measured_at self-consistency (M4C-0 §4.6) ---
     checks.append("timeline_labs_date_consistency")

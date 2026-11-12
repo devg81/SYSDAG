@@ -761,6 +761,41 @@ risk_factors:
       hdl_threshold_male: 40.0
       hdl_threshold_female: 50.0
       ldl_threshold: 100.0
+      # v0.12 / D024 (2026-11-12, human-approved "simple risk rule") -jatin:
+      # RULE-BASED LAI risk category + LDL goal, computed (never sampled)
+      # from the factors this generator models. Evidence: LAI diabetic
+      # dyslipidaemia consensus (J Clin Lipidol 2022, S1933287422003002):
+      # diabetes + 0-1 RF, no target-organ damage -> high (<70); diabetes +
+      # >=2 RF or TOD -> very high (<50). LAI 2023 Consensus IV
+      # (S1933287424000060) goals: low <100, moderate <100 (optional <70),
+      # high <70, very high <50. Major RF list (age M>=45/F>=55, premature
+      # family CAD, smoking, hypertension, low HDL) and the 0-1 / 2 / >=3
+      # split for non-diabetics: LAI 2016 Part 1 as reported by secondary
+      # sources; the LAI full texts were paywalled (402/403), so this split
+      # is verified against the NLA framework LAI adapted, not LAI's own
+      # table. Confidence: moderate for the rule, LOW for the per-patient
+      # category (see not_modeled -- every omission can only UNDER-count).
+      risk_tiers:
+        major_risk_factors:
+          age_male_years: 45
+          age_female_years: 55
+          current_smoking: true          # smoking_status == "current" only
+          hypertension: true             # risk_factors.hypertension
+          low_hdl: true                  # hdl < hdl_threshold_male/female above
+        rule:
+          diabetes_very_high_min_rf: 2   # diabetes + >= 2 RF -> very_high
+          non_diabetic_high_min_rf: 3    # >= 3 RF -> high
+          non_diabetic_moderate_rf: 2    # exactly 2 RF -> moderate; 0-1 -> low
+        ldl_goal_mg_dl:
+          low: 100
+          moderate: 100
+          high: 70
+          very_high: 50
+        not_modeled:
+          - "established ASCVD (so the LAI 'extreme' category is never assigned)"
+          - "family history of PREMATURE CAD (family_history.cardiovascular_disease is any-age CVD, so it is not used)"
+          - "target-organ damage, CKD, familial hypercholesterolaemia, Lp(a), single extreme risk factors"
+          - "smokeless tobacco (only smoking_status is modeled)"
 
   # M4B: HbA1c, conditional on the already-generated diabetes label
   # (docs/DECISIONS.md D011's HbA1c reversed-direction finding) -- never

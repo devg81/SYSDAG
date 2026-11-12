@@ -1,5 +1,5 @@
-"""Re-derive review sample records under the current generator (D023, v0.11)
-WITHOUT PTB-XL or pandas.
+"""Re-derive review sample records under the current generator (D023 v0.11,
+D024 v0.12) WITHOUT PTB-XL or pandas.
 
 Author: -jatin (2026-11-12).
 
@@ -18,11 +18,15 @@ be upgraded exactly by:
    provenance text, and
 4. re-running the real structural and clinical-consistency validators.
 
+v0.12 (D024): the LAI risk tier is deterministic (no RNG), so it is taken
+from the regenerated interpretations; only the base interpretation fields
+are compared in step 2.
+
 ECG metadata, IDs, diagnoses, medications and the timeline are carried over
 unchanged (they do not depend on the hyperlipidemia flag).
 
 Usage:
-    python integration/rederive_review_samples.py review_samples_v010 review_samples_v011
+    python integration/rederive_review_samples.py review_samples_v011 review_samples_v012
 """
 
 from __future__ import annotations
@@ -51,17 +55,30 @@ from schemas.patient_schema import SCHEMA_VERSION  # noqa: E402
 from validation.clinical_consistency import validate_clinical_consistency  # noqa: E402
 from validation.structural import validate_patient  # noqa: E402
 
-_OLD_PROVENANCE = (
-    "risk_factors.* sampled from configs/indian_population.yaml "
-    "(docs/DECISIONS.md D006); "
-)
-_NEW_PROVENANCE = (
-    "risk_factors.* sampled from configs/indian_population.yaml "
-    "(docs/DECISIONS.md D006), except risk_factors.hyperlipidemia, "
-    "which is DERIVED (v0.11, D023) as the NCEP_ATP_III "
-    "dyslipidemia verdict of this patient's own lipid_panel, never "
-    "sampled; "
-)
+# (old, new) provenance edits, applied in order and skipped when already
+# present. They must match the text integration/build_patient.py writes.
+_PROVENANCE_EDITS = [
+    (  # D023, v0.11
+        "risk_factors.* sampled from configs/indian_population.yaml "
+        "(docs/DECISIONS.md D006); ",
+        "risk_factors.* sampled from configs/indian_population.yaml "
+        "(docs/DECISIONS.md D006), except risk_factors.hyperlipidemia, "
+        "which is DERIVED (v0.11, D023) as the NCEP_ATP_III "
+        "dyslipidemia verdict of this patient's own lipid_panel, never "
+        "sampled; ",
+    ),
+    (  # D024, v0.12
+        "lipid_interpretations COMPUTED per definition, never sampled "
+        "(D011); labs.HbA1c",
+        "lipid_interpretations COMPUTED per definition, never sampled "
+        "(D011); the LAI_2020 interpretation also carries a RULE-BASED "
+        "risk_category/ldl_goal_mg_dl (v0.12, D024) from modelled factors "
+        "only (age, current smoking, hypertension, low HDL, diabetes); "
+        "ASCVD, premature family CAD, target-organ damage and CKD are not "
+        "modelled, so the category can only be under-estimated; labs.HbA1c",
+    ),
+]
+_BASE_INTERP_KEYS = ("definition", "dyslipidemia", "components_abnormal", "source_citation")
 
 
 def _expect(field: str, stored: Any, regenerated: Any, mismatches: list[str]) -> None:
@@ -80,7 +97,12 @@ def check_alignment(record: dict[str, Any], attrs: dict[str, Any]) -> list[str]:
         _expect(f"risk_factors.{k}", rf[k], attrs["risk_factors"][k], m)
     for k, v in attrs["lipid_panel"].items():
         _expect(f"lipid_panel.{k}", record["lipid_panel"][k], v, m)
-    _expect("lipid_interpretations", record["lipid_interpretations"], attrs["lipid_interpretations"], m)
+    _expect(
+        "lipid_interpretations",
+        [{k: i.get(k) for k in _BASE_INTERP_KEYS} for i in record["lipid_interpretations"]],
+        [{k: i.get(k) for k in _BASE_INTERP_KEYS} for i in attrs["lipid_interpretations"]],
+        m,
+    )
     lab = record["labs"][0]
     for k in ("value", "derivation", "confidence"):
         _expect(f"labs[HbA1c].{k}", lab[k], attrs["hba1c"][k], m)
@@ -113,10 +135,18 @@ def rederive(record: dict[str, Any], indian_config: dict[str, Any]) -> tuple[dic
     old_flag = out["risk_factors"]["hyperlipidemia"]
     out["risk_factors"]["hyperlipidemia"] = attrs["risk_factors"]["hyperlipidemia"]
 
+    # Derived (no-RNG) fields are taken from the regenerated attributes:
+    # the D024 LAI risk tier lives on the interpretations.
+    out["lipid_interpretations"] = [
+        {k: v for k, v in i.items()} for i in attrs["lipid_interpretations"]
+    ]
     prov = out["provenance"]
-    if _OLD_PROVENANCE not in prov["generator"]:
-        raise RuntimeError(f"{record['patient_id']}: provenance text to replace not found")
-    prov["generator"] = prov["generator"].replace(_OLD_PROVENANCE, _NEW_PROVENANCE)
+    for old, new in _PROVENANCE_EDITS:
+        if new in prov["generator"]:
+            continue
+        if old not in prov["generator"]:
+            raise RuntimeError(f"{record['patient_id']}: provenance text to replace not found: {old[:40]!r}")
+        prov["generator"] = prov["generator"].replace(old, new)
     prov["schema_version"] = SCHEMA_VERSION
     new_generated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
     if new_generated_at[:10] != prov["generated_at"][:10]:
@@ -141,8 +171,8 @@ def rederive(record: dict[str, Any], indian_config: dict[str, Any]) -> tuple[dic
     }
     change = {
         "patient_id": record["patient_id"],
-        "hyperlipidemia_v010": old_flag,
-        "hyperlipidemia_v011": out["risk_factors"]["hyperlipidemia"],
+        "hyperlipidemia_input": old_flag,
+        "hyperlipidemia_output": out["risk_factors"]["hyperlipidemia"],
         "ncep_dyslipidemia": next(
             i["dyslipidemia"] for i in out["lipid_interpretations"] if i["definition"] == "NCEP_ATP_III"
         ),
@@ -150,6 +180,11 @@ def rederive(record: dict[str, Any], indian_config: dict[str, Any]) -> tuple[dic
         "clinically_consistent": clinical.valid,
         "clinical_warnings": len(clinical.warnings),
         "checks_include_d023": "hyperlipidemia_derived_from_lipid_interpretations" in clinical.checks_performed,
+        "checks_include_d024": "lai_risk_tier_consistency" in clinical.checks_performed,
+        "lai_risk": {
+            k: next(i for i in out["lipid_interpretations"] if i["definition"] == "LAI_2020").get(k)
+            for k in ("risk_category", "ldl_goal_mg_dl", "ldl_above_goal", "risk_factors_counted")
+        },
     }
     return out, change
 

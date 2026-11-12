@@ -113,6 +113,56 @@ def sample_hyperlipidemia(rng: np.random.Generator, config: dict[str, Any]) -> b
     return _sample_bernoulli(rng, config, "hyperlipidemia")
 
 
+LAI_RISK_DERIVATION = "rule_based_lai_modelled_factors_only"
+
+
+def derive_lai_risk(
+    config: dict[str, Any],
+    age: float,
+    sex: int,
+    smoking_status: str,
+    hypertension: bool,
+    diabetes: bool,
+    lipid_values: dict[str, float],
+) -> dict[str, Any]:
+    """D024 (v0.12; -jatin): RULE-BASED LAI risk category and LDL goal,
+    COMPUTED (never sampled, no RNG) from modelled factors only. See
+    config lipid_definitions.LAI_2020.risk_tiers for the evidence and the
+    factors that are NOT modelled (all of which can only under-count)."""
+    lai = config["risk_factors"]["lipid_definitions"]["LAI_2020"]
+    tiers = lai["risk_tiers"]
+    mrf = tiers["major_risk_factors"]
+    male = sex == 0
+    counted = []
+    if age >= (mrf["age_male_years"] if male else mrf["age_female_years"]):
+        counted.append("age")
+    if mrf["current_smoking"] and smoking_status == "current":
+        counted.append("current_smoking")
+    if mrf["hypertension"] and hypertension:
+        counted.append("hypertension")
+    hdl_threshold = lai["hdl_threshold_male"] if male else lai["hdl_threshold_female"]
+    if mrf["low_hdl"] and lipid_values["hdl_mg_dl"] < hdl_threshold:
+        counted.append("low_hdl")
+    n = len(counted)
+    rule = tiers["rule"]
+    if diabetes:
+        category = "very_high" if n >= rule["diabetes_very_high_min_rf"] else "high"
+    elif n >= rule["non_diabetic_high_min_rf"]:
+        category = "high"
+    elif n == rule["non_diabetic_moderate_rf"]:
+        category = "moderate"
+    else:
+        category = "low"
+    goal = float(tiers["ldl_goal_mg_dl"][category])
+    return {
+        "risk_category": category,
+        "ldl_goal_mg_dl": goal,
+        "ldl_above_goal": lipid_values["ldl_mg_dl"] >= goal,
+        "risk_factors_counted": counted,
+        "risk_derivation": LAI_RISK_DERIVATION,
+    }
+
+
 def derive_hyperlipidemia(config: dict[str, Any], lipid_interpretations: list[dict[str, Any]]) -> bool:
     """D023 (v0.11, reverses D014; -jatin): risk_factors.hyperlipidemia is DERIVED,
     never sampled -- it equals the `dyslipidemia` verdict of the configured
@@ -763,6 +813,12 @@ def generate_indian_attributes(rng: np.random.Generator, config: dict[str, Any])
     lipid_values = sample_lipid_panel(np.random.default_rng(int(rng.integers(2**63))), config, sex)
     lipid_interpretations = derive_lipid_interpretations(config, lipid_values, sex)
     hyperlipidemia = derive_hyperlipidemia(config, lipid_interpretations)
+    # D024 (v0.12): deterministic, no RNG -- attach the LAI risk tier to the
+    # LAI_2020 interpretation only.
+    lai_risk = derive_lai_risk(config, age, sex, smoking_status, hypertension, diabetes, lipid_values)
+    for interp in lipid_interpretations:
+        if interp["definition"] == "LAI_2020":
+            interp.update(lai_risk)
     hba1c_rng = np.random.default_rng(int(rng.integers(2**63)))
     medication_treatment = sample_medication_treatment(rng, config, hypertension, diabetes)
     hba1c = sample_hba1c(

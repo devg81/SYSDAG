@@ -137,6 +137,12 @@ def build_patient(
             dyslipidemia=interp["dyslipidemia"],
             components_abnormal=interp["components_abnormal"],
             source_citation=interp["source_citation"],
+            # D024 (v0.12): LAI_2020 only; .get() -> None for other definitions
+            risk_category=interp.get("risk_category"),
+            ldl_goal_mg_dl=interp.get("ldl_goal_mg_dl"),
+            ldl_above_goal=interp.get("ldl_above_goal"),
+            risk_factors_counted=interp.get("risk_factors_counted"),
+            risk_derivation=interp.get("risk_derivation"),
         )
         for interp in attrs["lipid_interpretations"]
     ]
@@ -242,7 +248,11 @@ def build_patient(
             "sampled, never clamped: infeasible panels and TG>400 are "
             "rejected and redrawn whole, D011/D022); "
             "lipid_interpretations COMPUTED per definition, never sampled "
-            "(D011); labs.HbA1c for EVERY patient, conditional on the "
+            "(D011); the LAI_2020 interpretation also carries a RULE-BASED "
+            "risk_category/ldl_goal_mg_dl (v0.12, D024) from modelled factors "
+            "only (age, current smoking, hypertension, low HDL, diabetes); "
+            "ASCVD, premature family CAD, target-organ damage and CKD are not "
+            "modelled, so the category can only be under-estimated; labs.HbA1c for EVERY patient, conditional on the "
             "diabetes label, never the reverse: non-diabetic from "
             "ICMR-INDIAB-12 age+sex trend; diabetic (v0.10) log-normal "
             "fitted to ICMR-INDIAB-13 (36.3% HbA1c<7%) with SD 2.2 -- "

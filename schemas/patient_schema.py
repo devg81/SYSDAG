@@ -1,4 +1,4 @@
-"""Patient record data model — Schema v0.11 (see SCHEMA_VERSION below).
+"""Patient record data model — Schema v0.12 (see SCHEMA_VERSION below).
 
 v0.9 (D020/D021): family_history populated; air_quality added.
 v0.10 (D022): joint lipid model (no LDL clamp); HbA1c for every patient
@@ -9,6 +9,9 @@ v0.11 (D023, reverses D014; -jatin): risk_factors.hyperlipidemia is DERIVED from
 the patient's own lipid panel (NCEP_ATP_III dyslipidemia verdict), no
 longer an independent Bernoulli draw. No structural change; the version
 bump marks the changed meaning of the field.
+v0.12 (D024; -jatin): the LAI_2020 lipid interpretation carries a RULE-BASED
+risk_category / ldl_goal_mg_dl / ldl_above_goal / risk_factors_counted /
+risk_derivation (additive, optional; None on other definitions).
 
 EMPTY-VALUE CONVENTION (v0.10): `None` = NOT MODELED by this generator
 (e.g. height_cm, echo, diagnosed_date, medication start_date). `[]` =
@@ -31,7 +34,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Optional
 
-SCHEMA_VERSION = "0.11"
+SCHEMA_VERSION = "0.12"
 
 SMOKING_STATUSES = {"never", "former", "current"}  # controlled vocabulary; see RiskFactors
 
@@ -66,6 +69,10 @@ MEDICATION_STATUSES = {"active", "discontinued"}
 # clinical vocabulary (unlike `definition` below, which is deliberately
 # open — see LipidInterpretation).
 LIPID_COMPONENTS = {"LDL", "HDL", "triglycerides", "total_cholesterol"}
+
+# D024 (v0.12): LAI risk tiers this generator can assign. "extreme" exists in
+# LAI but needs established ASCVD, which is not modelled, so it is excluded.
+LAI_RISK_CATEGORIES = {"low", "moderate", "high", "very_high"}
 
 # Encounter types this project can currently generate (M8). Exactly ONE
 # value exists, and it is deliberately named for what it actually is: a
@@ -244,6 +251,13 @@ class LipidInterpretation:
     dyslipidemia: Optional[bool] = None
     components_abnormal: list[str] = field(default_factory=list)  # subset of LIPID_COMPONENTS
     source_citation: Optional[str] = None
+    # D024 (v0.12; -jatin): LAI_2020 entry only -- RULE-BASED risk tier from
+    # modelled factors (config risk_tiers). None on every other definition.
+    risk_category: Optional[str] = None  # one of LAI_RISK_CATEGORIES
+    ldl_goal_mg_dl: Optional[float] = None
+    ldl_above_goal: Optional[bool] = None
+    risk_factors_counted: Optional[list[str]] = None
+    risk_derivation: Optional[str] = None
 
 
 @dataclass
