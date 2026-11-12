@@ -1,0 +1,159 @@
+{
+  "patient_id": "PAT_000011",
+  "demographics": {
+    "age": 20.77,
+    "sex": 1,
+    "height_cm": null,
+    "weight_kg": null,
+    "state": "Bihar",
+    "urban_rural": "urban"
+  },
+  "provenance": {
+    "schema_version": "0.12",
+    "generated_at": "2026-11-12T17:35:29.200393+00:00",
+    "generator": "integration/build_patient.py (M2C Indian-conditioned generation, indian_random_seed=53); demographics.age/state/urban_rural and risk_factors.* sampled from configs/indian_population.yaml (docs/DECISIONS.md D006), except risk_factors.hyperlipidemia, which is DERIVED (v0.11, D023) as the NCEP_ATP_III dyslipidemia verdict of this patient's own lipid_panel, never sampled; demographics.sex sampled from its Census-2011-derived national marginal; height_cm/weight_kg not modeled (out of M2C scope); ECG is metadata-only, no waveform attached (D003); lipid_panel TC/ln(TG)/HDL sampled JOINTLY (v0.10, D022: trivariate normal, means solved from INDIAB-17 category rates, SDs from ICMR-INDIAB phase I PMC4016101, latent correlations calibrated to INDIAB-17 dyslipidaemia/LDL>=130 -- no Indian correlation coefficient exists), LDL DERIVED via Friedewald (never independently sampled, never clamped: infeasible panels and TG>400 are rejected and redrawn whole, D011/D022); lipid_interpretations COMPUTED per definition, never sampled (D011); the LAI_2020 interpretation also carries a RULE-BASED risk_category/ldl_goal_mg_dl (v0.12, D024) from modelled factors only (age, current smoking, hypertension, low HDL, diabetes); ASCVD, premature family CAD, target-organ damage and CKD are not modelled, so the category can only be under-estimated; labs.HbA1c for EVERY patient, conditional on the diabetes label, never the reverse: non-diabetic from ICMR-INDIAB-12 age+sex trend; diabetic (v0.10) log-normal fitted to ICMR-INDIAB-13 (36.3% HbA1c<7%) with SD 2.2 -- observed for treated, BORROWED (confidence low) for untreated; tagged per lab via derivation/confidence; diagnoses are a 1:1 promotion of the hypertension/diabetes risk_factors flags, never independently sampled, diagnosed_date left null (diagnosis timing not modeled); age_at_onset_years/onset_date MODELED (v0.10) by inverse-CDF on prevalence-by-age curves (NFHS-5 BP model for hypertension, LASI for diabetes), always <= age, confidence low -- see configs/indian_population.yaml onset_model; hyperlipidemia diagnosis deliberately deferred (D015); medical_history chronic_condition entries reference those diagnoses, not re-derived \u2014 see docs/M4D_DIAGNOSIS_HISTORY_DESIGN.md; medications generated only for hypertension/diabetes diagnoses, gated on ICMR-NNMS national treatment-rate Bernoulli draws (14.5%/36.1%), drug_class only (antihypertensive/antidiabetic), never a specific drug name; statin/antiplatelet medications not generated (no population treatment-rate evidence); start_date/stop_date left null (no per-patient initiation-date evidence exists), current_status always \"active\" (D016) \u2014 see docs/M4E_MEDICATION_DESIGN.md; blood_pressure (M8) SBP/DBP drawn from NFHS-5 age-band\u00d7sex truncated normals (PLOS ONE 2025, doi:10.1371/journal.pone.0332226); per-band SDs DERIVED from that paper's published mean/95%-CI/n and cross-validated against the independently published NFHS-5 male overall SDs (PMC11068163) to within 0.8%; truncation region set by the hypertension label's OWN published definition (SBP\u2265140 and/or DBP\u226590 and/or on antihypertensive), so BP is conditional on that already-primary label and NEVER used to re-derive it \u2014 a treated hypertensive's BP is left UNCONSTRAINED rather than forced high; ages above source coverage (men>54, women>49): mean SBP extrapolated along NFHS-5's own linear age trend, DBP and SDs held at the oldest band (v0.10), flagged per record via blood_pressure.extrapolated_beyond_source_age_range and confidence=low; SBP/DBP correlation r=0.7255 DERIVED from published Indian variances \u2014 see configs/indian_population.yaml risk_factors.blood_pressure for all limitations; encounters contain ONE synthetic_baseline_assessment, a structural container for this record's single measurement cross-section \u2014 NOT an observed healthcare contact, no visit/admission/follow-up is generated (no Indian utilization evidence); clinical_timeline indexes that encounter by reference_id and emits a condition_onset_modeled event per modeled onset (v0.10), and no medication-start or follow-up event; height_cm/weight_kg STILL null \u2014 no national mean+SD of Indian adult height by sex located in 6 research attempts (M4-0 x3, M8 x3), so BMI remains the evidence-primary anthropometric and weight stays derivable-but-underived; family_history (D020) diabetes / cardiovascular_disease (heart disease or stroke) in first-degree relatives: ages 45+ drawn from LASI Wave 1 observed marginals (14.33% / 11.61%), ages 20-44 MODEL-DERIVED by a calibrated parent simulation over LASI age-band x sex self-reported prevalence (no source covers 20-44), tagged per record via family_history.derivation; diabetes family history conditional on the patient's diabetes label via LASI's crude OR 3.80, never the reverse \u2014 see configs/indian_population.yaml risk_factors.family_history for all assumptions; air_quality (D021) is a deterministic lookup by state of the 2023 CPCB annual mean AQI (hourly station values -> city -> state, CPCB National AQI scale), NOT sampled and NOT the patient's own exposure: state resolution only, urban-station-weighted (flagged per record via air_quality.monitoring_bias), null with a reason for 9 states/UTs lacking adequate monitoring \u2014 see configs/indian_population.yaml environment.air_quality",
+    "random_seed": 53,
+    "source_datasets": [
+      "PTB-XL 1.0.1",
+      "Census of India 2011",
+      "ICMR-NNMS 2017-18",
+      "ICMR-INDIAB-17 (2023)",
+      "ICMR-INDIAB-25 (2026)",
+      "ICMR-INDIAB-12 (2022)",
+      "ICMR-INDIAB-13 (2022, diabetic HbA1c control share)",
+      "ICMR-INDIAB phase I lipids (PMC4016101) and glycaemic control (PMC4135327)",
+      "NFHS-5 2019-21 (blood pressure, via PLOS ONE 2025 doi:10.1371/journal.pone.0332226)",
+      "LASI Wave 1 2017-18 (family history; PMC11005278, PMC11659756, LASI India Report 2020 Tables 7.3/7.5)",
+      "CPCB CAAQMS hourly AQI 2023 via github.com/Vonter/india-cpcb-aqi @954db3a (ODbL-1.0)"
+    ]
+  },
+  "risk_factors": {
+    "bmi": 21.9,
+    "smoking_status": "never",
+    "hypertension": false,
+    "diabetes": false,
+    "hyperlipidemia": true
+  },
+  "family_history": {
+    "diabetes": false,
+    "cardiovascular_disease": false,
+    "derivation": "parent_simulation_calibrated"
+  },
+  "medical_history": [],
+  "diagnoses": [],
+  "medications": [],
+  "labs": [
+    {
+      "analyte": "HbA1c",
+      "unit": "%",
+      "value": 4.96,
+      "measured_at": "2026-11-12",
+      "derivation": "observed_distribution_indiab12_ngt",
+      "confidence": "moderate"
+    }
+  ],
+  "blood_pressure": {
+    "systolic_mm_hg": 113,
+    "diastolic_mm_hg": 75,
+    "measured_at": "2026-11-12",
+    "age_band_source": "NFHS-5 female 20-24",
+    "extrapolated_beyond_source_age_range": false,
+    "source": "derived_conditional_on_hypertension_label",
+    "confidence": "moderate"
+  },
+  "air_quality": {
+    "aqi": 162.1,
+    "category": "Moderate",
+    "reference_year": 2023,
+    "stations": 29,
+    "cities": 19,
+    "unavailable_reason": null,
+    "geographic_resolution": "state",
+    "monitoring_bias": "state_mean_is_urban_station_weighted",
+    "source": "CPCB CAAQMS hourly AQI via github.com/Vonter/india-cpcb-aqi (ODbL-1.0)"
+  },
+  "encounters": [
+    {
+      "encounter_id": "PAT_000011_ENC01",
+      "encounter_type": "synthetic_baseline_assessment",
+      "date": "2026-11-12",
+      "patient_id": "PAT_000011",
+      "recorded_measurements": [
+        "blood_pressure",
+        "lipid_panel",
+        "labs.HbA1c"
+      ],
+      "source": "synthetic_structural_container"
+    }
+  ],
+  "lipid_panel": {
+    "ldl_mg_dl": 100.6,
+    "hdl_mg_dl": 47.0,
+    "triglycerides_mg_dl": 82.0,
+    "total_cholesterol_mg_dl": 164.0
+  },
+  "lipid_interpretations": [
+    {
+      "definition": "NCEP_ATP_III",
+      "dyslipidemia": true,
+      "components_abnormal": [
+        "HDL"
+      ],
+      "source_citation": "ICMR-INDIAB-17 (Anjana et al., Lancet Diabetes & Endocrinology, 2023) / NCEP ATP III"
+    },
+    {
+      "definition": "LAI_2020",
+      "dyslipidemia": true,
+      "components_abnormal": [
+        "HDL",
+        "LDL"
+      ],
+      "source_citation": "ICMR-INDIAB-25 (J Clin Lipidology, 2026) / Lipid Association of India",
+      "risk_category": "low",
+      "ldl_goal_mg_dl": 100.0,
+      "ldl_above_goal": true,
+      "risk_factors_counted": [
+        "low_hdl"
+      ],
+      "risk_derivation": "rule_based_lai_modelled_factors_only"
+    }
+  ],
+  "ecg": {
+    "source": "PTB-XL",
+    "ecg_id": 16768,
+    "superclasses": [
+      "NORM"
+    ],
+    "strat_fold": 7,
+    "sampling_hz": 100,
+    "signal_shape": [
+      1000,
+      12
+    ],
+    "filename": "records100/16000/16768_lr",
+    "signal_available": false
+  },
+  "echo": null,
+  "clinical_timeline": [
+    {
+      "event_type": "synthetic_record_created",
+      "date": "2026-11-12",
+      "reference_id": null
+    },
+    {
+      "event_type": "synthetic_baseline_assessment",
+      "date": "2026-11-12",
+      "reference_id": "PAT_000011_ENC01"
+    }
+  ],
+  "validation": {
+    "validated": true,
+    "validation_version": "structural-0.2",
+    "errors": [],
+    "clinical_consistency": {
+      "valid": true,
+      "errors": [],
+      "warnings": []
+    }
+  }
+}
