@@ -200,45 +200,43 @@ def test_missingness_rules_correct_across_population():
         assert p.labs is not None and p.labs[0].analyte == "HbA1c"
 
 
-# Test 12 — D014/Option B: risk_factors.hyperlipidemia and
-# lipid_interpretations are distinct variables that are NOT required to
-# agree. All four combinations of (hyperlipidemia, lipid interpretation)
-# must be accepted as valid -- disagreement in either direction is an
-# expected semantic difference, never a clinical-consistency error.
-def test_hyperlipidemia_true_and_interpretation_true_is_valid():
-    patient = _patient_with_interpretation(1, target_dyslipidemia=True)
-    patient.risk_factors.hyperlipidemia = True
+# Test 12 — D023 (v0.11, reverses D014): risk_factors.hyperlipidemia is
+# DERIVED from the NCEP_ATP_III interpretation, so the generator always
+# agrees and the validator rejects a disagreement in either direction.
+def test_generated_hyperlipidemia_equals_ncep_interpretation():
+    for interp_target in (True, False):
+        patient = _patient_with_interpretation(1, target_dyslipidemia=interp_target)
+        assert patient.risk_factors.hyperlipidemia is interp_target
+        result = validate_clinical_consistency(patient, INDIAN_CONFIG)
+        assert result.valid, result.errors
+        assert "hyperlipidemia_derived_from_lipid_interpretations" in result.checks_performed
+
+
+def test_hyperlipidemia_true_with_normal_panel_is_rejected():
+    patient = _patient_with_interpretation(1, target_dyslipidemia=False)
+    patient.risk_factors.hyperlipidemia = True  # the old PAT_000095 pattern
     result = validate_clinical_consistency(patient, INDIAN_CONFIG)
-    assert result.valid, result.errors
-    assert "hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared" in result.checks_performed
+    assert not result.valid
+    assert any("risk_factors.hyperlipidemia=True does not match" in e for e in result.errors)
 
 
-def test_hyperlipidemia_false_and_interpretation_true_is_valid():
+def test_hyperlipidemia_false_with_abnormal_panel_is_rejected():
     patient = _patient_with_interpretation(1, target_dyslipidemia=True)
     patient.risk_factors.hyperlipidemia = False
     result = validate_clinical_consistency(patient, INDIAN_CONFIG)
-    assert result.valid, result.errors
-    assert "hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared" in result.checks_performed
+    assert not result.valid
+    assert any("risk_factors.hyperlipidemia=False does not match" in e for e in result.errors)
 
 
-def test_hyperlipidemia_true_and_interpretation_false_is_valid():
-    patient = _patient_with_interpretation(1, target_dyslipidemia=False)
-    patient.risk_factors.hyperlipidemia = True  # reverse mismatch
-    result = validate_clinical_consistency(patient, INDIAN_CONFIG)
-    assert result.valid, result.errors
-    assert "hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared" in result.checks_performed
-
-
-def test_validator_does_not_reconcile_hyperlipidemia_flag():
-    patient = build_patient(1, BASE_CONFIG)
-    # Force a known disagreement between the two independent fields.
-    patient.risk_factors.hyperlipidemia = True
-    for interp in patient.lipid_interpretations:
-        interp.dyslipidemia = False
-        interp.components_abnormal = []
-    result = validate_clinical_consistency(patient, INDIAN_CONFIG)
-    assert "hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared" in result.checks_performed
-    assert not any("hyperlipidemia" in e for e in result.errors)
+def test_hyperlipidemia_follows_ncep_not_lai():
+    # LAI and NCEP differ only for 100 <= LDL < 130; the flag must follow NCEP.
+    for s in range(1, 2000):
+        p = build_patient(s, BASE_CONFIG)
+        by_def = {i.definition: i.dyslipidemia for i in p.lipid_interpretations}
+        if by_def["LAI_2020"] and not by_def["NCEP_ATP_III"]:
+            assert p.risk_factors.hyperlipidemia is False
+            return
+    raise AssertionError("no LAI-only dyslipidemia patient in the search window")
 
 
 def test_batch_validation_is_linear_not_quadratic_in_call_count():

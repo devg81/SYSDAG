@@ -301,11 +301,11 @@ def test_demographics_risk_factors_lipids_diagnoses_unchanged():
     assert patient.medical_history is not None
 
 
-def test_hyperlipidemia_semantic_distinction_still_intact():
+def test_hyperlipidemia_derivation_check_passes():  # D023 (was D014 distinction)
     patient = build_patient(1, BASE_CONFIG)
     result = validate_clinical_consistency(patient, INDIAN_CONFIG)
     assert (
-        "hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared"
+        "hyperlipidemia_derived_from_lipid_interpretations"
         in result.checks_performed
     )
     assert not any("hyperlipidemia" in e for e in result.errors)

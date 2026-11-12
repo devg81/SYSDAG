@@ -7,10 +7,10 @@ See `docs/M4C_CONSISTENCY_AUDIT.md`/`docs/M4D_DIAGNOSIS_HISTORY_DESIGN.md`/
 `docs/M4E_MEDICATION_DESIGN.md` for the full dependency map and exactly
 which relationships are validated here versus left unsupported
 (`encounters` — not yet implemented; hyperlipidemia's own diagnosis and
-statin/antiplatelet medications, deliberately deferred, D015/D016) or
-intentionally left unreconciled by design (`risk_factors.hyperlipidemia`
-vs. `lipid_interpretations` — two distinct variables per D014/Option B,
-see docs/M4C_HYPERLIPIDEMIA_RESOLUTION.md).
+statin/antiplatelet medications, deliberately deferred, D015/D016).
+`risk_factors.hyperlipidemia` vs. `lipid_interpretations` was left
+unreconciled under D014 until v0.10; since v0.11 (D023) the flag must
+equal the configured definition's computed dyslipidemia verdict.
 
 Reuses `generation.indian_population.derive_lipid_interpretations()` and
 `generation.clinical_history.derive_diagnoses()`/`derive_medical_history()`/
@@ -224,16 +224,25 @@ def validate_clinical_consistency(
             if dx.onset_date and enc_dates and dx.onset_date > max(enc_dates):
                 errors.append(f"diagnosis {dx.diagnosis_id}: onset_date {dx.onset_date} after the assessment")
 
-    # --- Intentionally distinct variables (docs/DECISIONS.md D014, Option B) ---
-    # risk_factors.hyperlipidemia (M2C: unconditioned Bernoulli(0.812), a
-    # population/background risk-factor attribute, same role as hypertension/
-    # diabetes) and lipid_interpretations (M4B: computed per-patient from
-    # lipid_panel) are two independently-evidenced variables describing
-    # related but distinct facts -- NOT duplicate sources of truth. D014's
-    # semantic audit (docs/M4C_HYPERLIPIDEMIA_RESOLUTION.md) confirmed the
-    # measured 73-77% disagreement is expected, not a bug. This validator
-    # never compares them and disagreement is never an error.
-    checks.append("hyperlipidemia_vs_lipid_interpretations_intentionally_not_compared")
+    # --- risk_factors.hyperlipidemia <-> lipid_interpretations (hard rule, D023) ---
+    # v0.11 reverses D014: the flag is DERIVED from the patient's own panel,
+    # so it must equal the configured definition's dyslipidemia verdict.
+    # The stored interpretation is itself checked against the raw panel
+    # above, so this closes the chain panel -> interpretation -> flag.
+    checks.append("hyperlipidemia_derived_from_lipid_interpretations")
+    flag = patient.risk_factors.hyperlipidemia if patient.risk_factors else None
+    if indian_config is None:
+        warnings.append("hyperlipidemia derivation check skipped: indian_config not supplied")
+    elif interps and flag is not None:
+        definition = indian_config["risk_factors"]["hyperlipidemia"]["derivation"]["definition"]
+        match = next((i for i in interps if i.definition == definition), None)
+        if match is None:
+            errors.append(f"risk_factors.hyperlipidemia: no {definition} lipid interpretation to derive it from")
+        elif flag != match.dyslipidemia:
+            errors.append(
+                f"risk_factors.hyperlipidemia={flag} does not match "
+                f"lipid_interpretations[{definition}].dyslipidemia={match.dyslipidemia} (D023)"
+            )
 
     # --- Clinical timeline / labs measured_at self-consistency (M4C-0 §4.6) ---
     checks.append("timeline_labs_date_consistency")

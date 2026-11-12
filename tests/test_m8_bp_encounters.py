@@ -57,7 +57,7 @@ def _bp(seed: int, age: float, sex: int, hypertension: bool, treated: bool):
 
 
 def test_schema_version_is_010():
-    assert SCHEMA_VERSION == "0.10"
+    assert SCHEMA_VERSION == "0.11"
 
 
 def test_config_validates():

@@ -107,7 +107,22 @@ def sample_diabetes(rng: np.random.Generator, config: dict[str, Any]) -> bool:
 
 
 def sample_hyperlipidemia(rng: np.random.Generator, config: dict[str, Any]) -> bool:
+    """Pre-D023 Bernoulli(0.812) draw. Since v0.11 the result is DISCARDED:
+    generate_indian_attributes() still calls it once so that every later
+    field keeps its random numbers for the same seed (see D023)."""
     return _sample_bernoulli(rng, config, "hyperlipidemia")
+
+
+def derive_hyperlipidemia(config: dict[str, Any], lipid_interpretations: list[dict[str, Any]]) -> bool:
+    """D023 (v0.11, reverses D014): risk_factors.hyperlipidemia is DERIVED,
+    never sampled -- it equals the `dyslipidemia` verdict of the configured
+    definition (NCEP_ATP_III, the definition behind INDIAB-17's 81.2%)
+    computed from this patient's own lipid panel."""
+    definition = config["risk_factors"]["hyperlipidemia"]["derivation"]["definition"]
+    for interp in lipid_interpretations:
+        if interp["definition"] == definition:
+            return bool(interp["dyslipidemia"])
+    raise KeyError(f"hyperlipidemia derivation definition {definition!r} not in lipid_interpretations")
 
 
 _LIPID_MAX_REDRAW_ATTEMPTS = 1000
@@ -721,12 +736,12 @@ def generate_indian_attributes(rng: np.random.Generator, config: dict[str, Any])
     """Dependency order per docs/INDIAN_GENERATION_STRATEGY.md section 6
     and docs/M4_CLINICAL_ARCHITECTURE.md section 9:
     age -> sex -> state -> urban_rural -> BMI -> smoking -> hypertension ->
-    diabetes -> hyperlipidemia -> lipid panel -> lipid interpretations ->
+    diabetes -> lipid panel -> lipid interpretations -> hyperlipidemia ->
     HbA1c -> medication treatment. Only BMI/smoking (sex), HbA1c (age+sex,
     conditional on diabetes), and medication_treatment (conditional on
-    hypertension/diabetes) are conditioned; hypertension/diabetes/
-    hyperlipidemia/lipid panel components are unconditioned marginals;
-    lipid interpretations and LDL are COMPUTED, never sampled. See the
+    hypertension/diabetes) are conditioned; hypertension/diabetes/lipid
+    panel components are unconditioned marginals; lipid interpretations,
+    LDL and (D023, v0.11) hyperlipidemia are COMPUTED, never sampled. See the
     config for exactly which relationships are evidence-supported versus
     deliberately left unconditioned (M2C-0/M4B-0/M4E-0 evidence gates).
     """
@@ -738,12 +753,16 @@ def generate_indian_attributes(rng: np.random.Generator, config: dict[str, Any])
     smoking_status = sample_smoking_status(rng, config, sex)
     hypertension = sample_hypertension(rng, config)
     diabetes = sample_diabetes(rng, config)
-    hyperlipidemia = sample_hyperlipidemia(rng, config)
+    # D023 (v0.11): placeholder draw, value discarded -- keeps the parent
+    # stream aligned so every later field is byte-identical to v0.10 for
+    # the same seed. The real flag is derived from the panel below.
+    sample_hyperlipidemia(rng, config)
     # v0.10: lipids and HbA1c each draw from their own child stream (one
     # parent draw each), so their variable-length rejection loops can never
     # shift any later field's random numbers again.
     lipid_values = sample_lipid_panel(np.random.default_rng(int(rng.integers(2**63))), config, sex)
     lipid_interpretations = derive_lipid_interpretations(config, lipid_values, sex)
+    hyperlipidemia = derive_hyperlipidemia(config, lipid_interpretations)
     hba1c_rng = np.random.default_rng(int(rng.integers(2**63)))
     medication_treatment = sample_medication_treatment(rng, config, hypertension, diabetes)
     hba1c = sample_hba1c(

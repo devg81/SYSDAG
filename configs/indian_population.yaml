@@ -486,8 +486,19 @@ risk_factors:
       opportunity) as a quantitative input -- it has no attached numbers
       usable here.
     distribution:
+      # Since D023 (v0.11) this is the TARGET prevalence used by the
+      # statistical validator, not the generator: the Bernoulli draw is
+      # still made once (value discarded) to keep the RNG stream aligned.
       type: bernoulli
       p: 0.812
+    derivation:
+      # D023 (2026-11-12, human-approved, reverses D014): the flag is the
+      # `dyslipidemia` verdict of this definition computed from the
+      # patient's own lipid_panel. NCEP_ATP_III because INDIAB-17's 81.2%
+      # is NCEP-based; with the D022 joint lipid model it reproduces
+      # 80.9% on 5,000 records (LAI_2020 would give ~90%).
+      method: derived_from_lipid_interpretations
+      definition: NCEP_ATP_III
 
   # M9 / D020 (2026-11-10): family history of diabetes and of CVD
   # (heart disease or stroke) in first-degree relatives. Supersedes the

@@ -1,10 +1,14 @@
-"""Patient record data model — Schema v0.10 (see SCHEMA_VERSION below).
+"""Patient record data model — Schema v0.11 (see SCHEMA_VERSION below).
 
 v0.9 (D020/D021): family_history populated; air_quality added.
 v0.10 (D022): joint lipid model (no LDL clamp); HbA1c for every patient
 (Lab.derivation/confidence); BP confidence; modeled condition onset on
 Diagnosis (age_at_onset_years/onset_date, always tagged modeled) plus a
 condition_onset_modeled timeline event; age rounded to 2 decimals.
+v0.11 (D023, reverses D014): risk_factors.hyperlipidemia is DERIVED from
+the patient's own lipid panel (NCEP_ATP_III dyslipidemia verdict), no
+longer an independent Bernoulli draw. No structural change; the version
+bump marks the changed meaning of the field.
 
 EMPTY-VALUE CONVENTION (v0.10): `None` = NOT MODELED by this generator
 (e.g. height_cm, echo, diagnosed_date, medication start_date). `[]` =
@@ -27,7 +31,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any, Optional
 
-SCHEMA_VERSION = "0.10"
+SCHEMA_VERSION = "0.11"
 
 SMOKING_STATUSES = {"never", "former", "current"}  # controlled vocabulary; see RiskFactors
 
@@ -126,6 +130,7 @@ class RiskFactors:
     smoking_status: Optional[str] = None  # one of SMOKING_STATUSES
     hypertension: Optional[bool] = None
     diabetes: Optional[bool] = None
+    # D023 (v0.11): derived = lipid_interpretations[NCEP_ATP_III].dyslipidemia
     hyperlipidemia: Optional[bool] = None
 
 

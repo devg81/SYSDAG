@@ -81,10 +81,9 @@ def test_interpretations_are_recomputable_from_raw_values():
     assert interps == recomputed  # pure function: same input -> same output, always
 
 
-# Test 5 — no NEW independently sampled hyperlipidemia-like flag; the
-# existing risk_factors.hyperlipidemia (Bernoulli, from M2C) is untouched
-# by this milestone, and lipid_interpretations.dyslipidemia is a *computed*
-# value with no independent randomness of its own.
+# Test 5 — lipid_interpretations.dyslipidemia is a *computed* value with no
+# independent randomness of its own (since D023, risk_factors.hyperlipidemia
+# is derived from it too).
 def test_lipid_interpretation_has_no_independent_randomness():
     v = {
         "total_cholesterol_mg_dl": 250.0,

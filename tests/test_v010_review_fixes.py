@@ -85,7 +85,7 @@ def test_built_patients_pass_clinical_consistency():
 # ---- protected 5: provenance ----------------------------------------------
 def test_provenance_lists_sources():
     prov = PATIENTS[0].provenance
-    assert prov.schema_version == "0.10"
+    assert prov.schema_version == "0.11"
     assert any("INDIAB-13" in s for s in prov.source_datasets)
     assert "never clamped" in prov.generator
 
