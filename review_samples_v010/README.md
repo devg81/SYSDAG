@@ -17,4 +17,8 @@ Fields new in v0.10: `labs[].derivation/confidence`, `blood_pressure.confidence`
 `diagnoses[].age_at_onset_years/onset_date/onset_derivation/onset_confidence`,
 timeline event `condition_onset_modeled`. `diagnosed_date` stays null on purpose.
 Ages are rounded to 2 decimals. Unchanged between versions: age, sex, state,
-BMI, smoking, the three risk-factor flags, family history, AQI.
+urban/rural, BMI, smoking, the three risk-factor flags, AQI. Re-drawn (same
+distributions, different random numbers, because the RNG order changed after
+the lipid step): medication treatment, BP, family history. This is why
+PAT_000013 is now treated and PAT_000095 untreated, and why family history
+differs for PAT_000001 and PAT_000013.

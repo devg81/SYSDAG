@@ -45,3 +45,9 @@ None regenerated. Frozen 100K stays v0.9. v0.10 regeneration (~2 h) awaits appro
 
 ## Open questions
 See `docs/V010_CHANGE_REPORT.md` (9 items; #1 = reversing D014 needs the user).
+
+## Follow-up: 5 v0.10 sample records
+Generated the same 5 patients as `review_samples_v09/` at v0.10 into
+`review_samples_v010/` (with README). All 5 structurally valid and clinically
+consistent, 0 warnings. Unchanged vs v0.9: demographics, BMI, smoking, flags,
+AQI. Re-drawn by the RNG-order change: treatment, BP, family history.
