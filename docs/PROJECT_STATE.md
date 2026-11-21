@@ -1292,14 +1292,15 @@ parameter count.
 
 # Last Updated
 
-2026-11-21 — Attribute export (no schema/generator change): new
-`scripts/export_data_attributes.py` writes `docs/GENERATED_DATA_ATTRIBUTES.xlsx`,
-one workbook with every attribute of all generated data on this machine
-(125 records: review samples v0.9–v0.13 + 50-record pilot v0.7/v0.8): attribute
-dictionary (104 attributes), flattened records (147 columns), column index, 100K
-field-completeness audit, schema version history. The frozen 100K (v0.9) is not
-on this machine; it is covered via its manifest and audit only. Next action
-unchanged (AWS phase-1 run).
+2026-11-21 — Patient-wise attribute sheet (no schema/generator change):
+`scripts/export_patient_attributes.py` writes `docs/PATIENT_ATTRIBUTES.xlsx`:
+what one synthetic patient record contains, 70 plain-language attributes in
+15 sections (identity, demographics, AQI, risk factors, family history, vitals,
+labs, cholesterol interpretation, diagnosis history, medical history,
+medications, ECG, echo, visits/timeline, record quality), shown for the 5
+v0.13 review patients side by side plus one card sheet per patient. Replaces
+the earlier technical export (`GENERATED_DATA_ATTRIBUTES.xlsx`), which the
+user rejected. Next action unchanged (AWS phase-1 run).
 
 2026-11-12 — Schema v0.13 (**D027**): hypertension now drawn
 by age × sex and diabetes by age, from observed Indian surveys (NFHS-5/NNMS <45,

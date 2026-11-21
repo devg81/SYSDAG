@@ -60,3 +60,28 @@ Unchanged: AWS phase-1 run (real-PTB-XL tests → pilot → 10…10K → 100K ap
 
 ## Commit
 `b84a155` — feat: export all generated-data attributes to one workbook (pushed to origin/main).
+
+---
+
+## Follow-up (same session): patient-wise layout
+
+### User request
+"not like this, make per data, like in one patient what all things we have
+considered like age, sex, aqi, health record, patient history, Diagnosis history, etc"
+
+### What was done
+- Replaced the technical export (`scripts/export_data_attributes.py`,
+  `docs/GENERATED_DATA_ATTRIBUTES.xlsx`; both removed) with
+  `scripts/export_patient_attributes.py` → `docs/PATIENT_ATTRIBUTES.xlsx`.
+- Sheet "All Attributes": 70 plain-language attributes in 15 sections. Each row
+  shows the 5 v0.13 review patients side by side (PAT_000001/11/13/15/95) and a
+  "what it means / how it is decided" note. Not-modelled items (height, weight,
+  echo, diagnosis date, medication dates, statin/aspirin, CV events) are shown
+  explicitly as "Not recorded (not modelled yet)".
+- One sheet per patient: a readable patient card with a one-line summary.
+- Output checked row by row against `review_samples_v013/*.json` (demographics,
+  AQI including the unavailable Jharkhand case, onset ages, untreated vs treated
+  medications, ECG classes, timeline order).
+
+### Commands
+- `python scripts/export_patient_attributes.py` → `patients=5 attributes=70 sections=15`.
