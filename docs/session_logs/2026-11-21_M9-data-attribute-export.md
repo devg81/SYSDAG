@@ -141,3 +141,16 @@ asked for it by email as a Word document.
 
 ### Commit
 `7e616a0` — docs: Word version of the patient record schema (pushed to origin/main).
+
+---
+
+## Follow-up 4 (same session): shortened to an attribute list only
+
+The user asked to reduce the Word document to the attribute list only, with no
+detailed field reference, and to draft the email subject and body.
+
+- `scripts/build_schema_docx.js` rewritten. The document is now one page: a table
+  with No. / Section / Attributes covering all 18 sections, built from
+  `schemas/patient_schema.json`.
+- Rendered through MS Word to check the layout: 1 page.
+- The email subject and body were drafted in chat (not sent from this session).
