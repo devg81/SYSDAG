@@ -154,3 +154,6 @@ detailed field reference, and to draft the email subject and body.
   `schemas/patient_schema.json`.
 - Rendered through MS Word to check the layout: 1 page.
 - The email subject and body were drafted in chat (not sent from this session).
+
+### Commit
+`cec3b06` — docs: shorten mentor schema doc to a one-page attribute list (pushed to origin/main).
