@@ -59,4 +59,4 @@ None.
 Unchanged: AWS phase-1 run (real-PTB-XL tests → pilot → 10…10K → 100K approval).
 
 ## Commit
-See the final reply (hash recorded after push).
+`b84a155` — feat: export all generated-data attributes to one workbook (pushed to origin/main).
