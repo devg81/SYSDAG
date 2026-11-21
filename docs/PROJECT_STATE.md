@@ -1292,7 +1292,16 @@ parameter count.
 
 # Last Updated
 
-2026-11-12 (latest, -jatin) — Schema v0.13 (**D027**): hypertension now drawn
+2026-11-21 — Attribute export (no schema/generator change): new
+`scripts/export_data_attributes.py` writes `docs/GENERATED_DATA_ATTRIBUTES.xlsx`,
+one workbook with every attribute of all generated data on this machine
+(125 records: review samples v0.9–v0.13 + 50-record pilot v0.7/v0.8): attribute
+dictionary (104 attributes), flattened records (147 columns), column index, 100K
+field-completeness audit, schema version history. The frozen 100K (v0.9) is not
+on this machine; it is covered via its manifest and audit only. Next action
+unchanged (AWS phase-1 run).
+
+2026-11-12 — Schema v0.13 (**D027**): hypertension now drawn
 by age × sex and diabetes by age, from observed Indian surveys (NFHS-5/NNMS <45,
 LASI 45+). This was approved by the user on condition that research found a
 positive age correlation; every national source shows one.
