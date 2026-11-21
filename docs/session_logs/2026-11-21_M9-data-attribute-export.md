@@ -85,3 +85,6 @@ considered like age, sex, aqi, health record, patient history, Diagnosis history
 
 ### Commands
 - `python scripts/export_patient_attributes.py` → `patients=5 attributes=70 sections=15`.
+
+### Commit
+`11419b2` — feat: patient-wise attribute sheet replaces technical export (pushed to origin/main).
