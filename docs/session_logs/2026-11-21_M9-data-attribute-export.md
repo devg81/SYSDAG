@@ -138,3 +138,6 @@ asked for it by email as a Word document.
   inherit v0.9); table column widths are now fixed.
 - `pytest tests/test_patient_json_schema.py`: 32 passed after the description edits.
 - The email itself was not sent from this session. The user sends the file.
+
+### Commit
+`7e616a0` — docs: Word version of the patient record schema (pushed to origin/main).
