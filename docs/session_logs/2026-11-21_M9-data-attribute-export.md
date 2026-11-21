@@ -88,3 +88,28 @@ considered like age, sex, aqi, health record, patient history, Diagnosis history
 
 ### Commit
 `11419b2` — feat: patient-wise attribute sheet replaces technical export (pushed to origin/main).
+
+---
+
+## Follow-up 2 (same session): the schema itself
+
+### User request
+"not like this, i just want the schema of the whole data we have generated in this project"
+
+### What was done
+- Added `schemas/patient_schema.json`, a JSON Schema (draft 2020-12) for the whole
+  generated patient record. It mirrors `schemas/patient_schema.py` (fields, types,
+  vocabularies) and covers schema v0.7–v0.13. Fields added after v0.7 are optional
+  and their descriptions say "Added in vX". `additionalProperties: false`
+  everywhere, so undocumented fields are rejected.
+- Added `tests/test_patient_json_schema.py`. It checks the schema is a valid JSON
+  Schema, that every review sample and the pilot output conform, and that 5
+  malformed mutations are rejected.
+- Added `jsonschema>=4.20` to `requirements.txt` (installed 4.26.0 locally).
+- Removed the rejected patient-wise export (`scripts/export_patient_attributes.py`,
+  `docs/PATIENT_ATTRIBUTES.xlsx`).
+
+### Results
+- All 125 local records validate: 0 invalid (50 v0.7, 50 v0.8, 5 each v0.9–v0.13).
+- `pytest tests/test_patient_json_schema.py`: 32 passed.
+- The full suite was not run (no PTB-XL on this machine; unrelated to this change).

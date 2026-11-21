@@ -1292,15 +1292,14 @@ parameter count.
 
 # Last Updated
 
-2026-11-21 — Patient-wise attribute sheet (no schema/generator change):
-`scripts/export_patient_attributes.py` writes `docs/PATIENT_ATTRIBUTES.xlsx`:
-what one synthetic patient record contains, 70 plain-language attributes in
-15 sections (identity, demographics, AQI, risk factors, family history, vitals,
-labs, cholesterol interpretation, diagnosis history, medical history,
-medications, ECG, echo, visits/timeline, record quality), shown for the 5
-v0.13 review patients side by side plus one card sheet per patient. Replaces
-the earlier technical export (`GENERATED_DATA_ATTRIBUTES.xlsx`), which the
-user rejected. Next action unchanged (AWS phase-1 run).
+2026-11-21 — Machine-readable schema added: `schemas/patient_schema.json`
+(JSON Schema draft 2020-12). It mirrors `schemas/patient_schema.py` and covers
+every generated record from v0.7 to v0.13, with types, allowed values, units and
+the version that added each field. All 125 local records validate (pilot v0.7/v0.8
+and review samples v0.9–v0.13). `tests/test_patient_json_schema.py`: 32 passed.
+`jsonschema` was added to requirements. Two earlier attribute exports from this
+session were rejected by the user and removed. Next action unchanged (AWS
+phase-1 run). The 100K re-run on AWS can validate against this schema.
 
 2026-11-12 — Schema v0.13 (**D027**): hypertension now drawn
 by age × sex and diabetes by age, from observed Indian surveys (NFHS-5/NNMS <45,
