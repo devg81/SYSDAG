@@ -1292,6 +1292,12 @@ parameter count.
 
 # Last Updated
 
+2026-11-21 (later) — Word version of the schema for the project mentor:
+`docs/SYSDAG_Patient_Record_Schema_v0.13.docx`, built from
+`schemas/patient_schema.json` by `scripts/build_schema_docx.js`. Field
+descriptions were added to the JSON schema (no constraint changes; 32 schema
+tests pass).
+
 2026-11-21 — Machine-readable schema added: `schemas/patient_schema.json`
 (JSON Schema draft 2020-12). It mirrors `schemas/patient_schema.py` and covers
 every generated record from v0.7 to v0.13, with types, allowed values, units and

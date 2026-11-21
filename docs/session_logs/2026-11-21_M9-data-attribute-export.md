@@ -116,3 +116,25 @@ considered like age, sex, aqi, health record, patient history, Diagnosis history
 
 ### Commit
 `22ca8b6` — feat: add JSON Schema for all generated patient records (pushed to origin/main).
+
+---
+
+## Follow-up 3 (same session): Word version for the project mentor
+
+### User request
+The user sent the attribute list to the project mentor on WhatsApp. The mentor
+asked for it by email as a Word document.
+
+### What was done
+- `docs/SYSDAG_Patient_Record_Schema_v0.13.docx` (8 pages, A4), generated from
+  `schemas/patient_schema.json` by `scripts/build_schema_docx.js` (docx-js 9).
+  Contents: about/conventions, a record-overview table, one field table per
+  section (field, type, allowed values/format, description, "added in" version),
+  and the not-yet-modelled list.
+- Added missing field descriptions to `schemas/patient_schema.json`
+  (descriptions only; types and constraints unchanged).
+- Rendered through MS Word to PDF and then to images. Fixed: "added in" showed
+  "v0.10." with a stray dot; family-history fields wrongly showed v0.7 (now
+  inherit v0.9); table column widths are now fixed.
+- `pytest tests/test_patient_json_schema.py`: 32 passed after the description edits.
+- The email itself was not sent from this session. The user sends the file.
