@@ -113,3 +113,6 @@ considered like age, sex, aqi, health record, patient history, Diagnosis history
 - All 125 local records validate: 0 invalid (50 v0.7, 50 v0.8, 5 each v0.9–v0.13).
 - `pytest tests/test_patient_json_schema.py`: 32 passed.
 - The full suite was not run (no PTB-XL on this machine; unrelated to this change).
+
+### Commit
+`22ca8b6` — feat: add JSON Schema for all generated patient records (pushed to origin/main).
